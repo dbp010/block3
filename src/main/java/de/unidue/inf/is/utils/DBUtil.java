@@ -33,7 +33,7 @@ public final class DBUtil {
 		properties.setProperty("user", "DBP010");
 		properties.setProperty("password", "ahr4kohm");
 
-		final String url = "jdbc:db2://<Rechnername>.is.inf.uni-due.de:50005/" + database + ":currentSchema=<DB-Schema>;";
+		final String url = "jdbc:db2://dione.is.inf.uni-due.de:50005/" + database + ":currentSchema=dbp010;";
 		System.out.println(url);
 		Connection connection = DriverManager.getConnection(url, properties);
 		return connection;
