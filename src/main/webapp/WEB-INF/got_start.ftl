@@ -47,6 +47,7 @@ body{
 		
 		<div id="figures">
 		<h1>Figuren</h1>
+		<p>Name: ${person.name} Geburtsort: ${person.birthplace.name}
 		</div>
 		
 		<div id="houses">

@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.unidue.inf.is.dbp010.db.entity.Location;
+import de.unidue.inf.is.dbp010.db.entity.Person;
 import de.unidue.inf.is.utils.DBUtil;
 
 /**
@@ -34,6 +36,17 @@ public final class GoTServlet extends HttpServlet {
 			System.out.println("Datenbank " + databaseToCheck + " nicht vorhanden :-(");
 		}
 
+		Location l = new Location();
+		l.setName("Land");
+		
+		Person p = new Person();
+		p.setName("Klaus");
+		p.setBirthplace(l);
+		
+		
+		request.setAttribute("person", p);
+		
+		
 		request.getRequestDispatcher("got_start.ftl").forward(request, response);
 	}
 
