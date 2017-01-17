@@ -36,41 +36,8 @@ body{
 			<img width="100%" src="images/header.jpg" class="centerBlock" />
 		</div>
 		<div id="site">
-		
-		<#--
-		<p>
-			Die Datenbank "${db2name}" ist ${db2exists}
-		</p>
-		-->
-		
+		Name: ${person.name}
 		</div>
-		
-		<div id="figures">
-			<h1>Figuren</h1>
-			<table class="person_table">
-    			<tr>
-       				 <th>Name</th> 
-    			</tr>
-    			<#list persons as person>
-    			<tr>
-       			 	<td><a href="person?cid=${person.cid}">${person.name}</a></td> 
-    			</tr>
-    			</#list>
-  			</table>
-		</div>
-		
-		<div id="houses">
-		<h1>Häuser</h1>
-		</div>
-		
-		<div id="seasons">
-		<h1>Staffeln</h1>
-		</div>
-		
-		<div id="playlists">
-		<h1>Playlisten</h1>
-		</div>
-		
 	</div>
 </body>
 </html>
