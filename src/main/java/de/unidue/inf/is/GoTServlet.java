@@ -21,20 +21,21 @@ public final class GoTServlet extends HttpServlet {
 			throws ServletException, IOException {
 
 		final String databaseToCheck = "mygot";
-		boolean databaseExists = DBUtil.checkDatabaseExists(databaseToCheck);
+		boolean databaseExists = DBUtil.checkDatabaseExistsExternal(databaseToCheck);
 
 		request.setAttribute("db2name", databaseToCheck);
 
 		if (databaseExists) {
 //			request.setAttribute("db2exists", "vorhanden! Supi!");
-			System.out.println("Datenbank " + databaseToCheck + "vorhanden! Supi!");
+			System.out.println("Datenbank " + databaseToCheck + " vorhanden! Supi!");
 		}
 		else {
-//			request.setAttribute("db2exists", "nicht vorhanden :-(");
-			System.out.println("Datenbank " + databaseToCheck + "nicht vorhanden :-(");
+			request.setAttribute("db2exists", "nicht vorhanden :-(");
+			System.out.println("Datenbank " + databaseToCheck + " nicht vorhanden :-(");
 		}
 
 		request.getRequestDispatcher("got_start.ftl").forward(request, response);
 	}
 
+	
 }
