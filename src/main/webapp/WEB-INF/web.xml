@@ -63,9 +63,19 @@
 		<servlet-class>de.unidue.inf.is.GoTServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>person_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.PersonServlet</servlet-class>
+	</servlet>
+	
 	<servlet-mapping>
 		<servlet-name>got_servlet</servlet-name>
 		<url-pattern>/got</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>person_servlet</servlet-name>
+		<url-pattern>/person</url-pattern>
 	</servlet-mapping>
 
 	<!-- Prevent the visiting of MVC Views from outside the servlet container. 

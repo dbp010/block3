@@ -1,12 +1,17 @@
 package de.unidue.inf.is;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
+import de.unidue.inf.is.dbp010.db.entity.Person;
+import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 import de.unidue.inf.is.utils.DBUtil;
 
 /**
@@ -34,6 +39,17 @@ public final class GoTServlet extends HttpServlet {
 			System.out.println("Datenbank " + databaseToCheck + " nicht vorhanden :-(");
 		}
 
+		List<Person> pl  = new ArrayList<>();
+		Person p = new Person();
+		p.setCid(45345345);
+		p.setName("Klaus");
+		pl.add(p);
+		
+		/* fetch person via persistence manager */
+		
+		
+		request.setAttribute("persons", pl);
+		
 		request.getRequestDispatcher("got_start.ftl").forward(request, response);
 	}
 
