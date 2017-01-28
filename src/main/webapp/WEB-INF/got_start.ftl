@@ -42,35 +42,98 @@ body{
 			Die Datenbank "${db2name}" ist ${db2exists}
 		</p>
 		-->
-		
+			<div id="figures">
+				<h1>Figuren</h1>
+				<table class="figures_table">
+	    			<tr>
+	       				 <th>Name</th>
+	       				 <th>Typ</th> 
+	    			</tr>
+	    			
+	    			<#list figures as figure>
+	    			<tr>
+	       			 	<td>
+	       			 		<#-- START -->
+	       			 		<#-- Build the link to person / animal site -->
+	       			 		<#if figure.type == 'person'>
+	       			 			<a href="person?cid=${figure.cid}">${figure.name}</a>
+	       			 		<#elseif figure.type == 'animal'>
+	       			 			<a href="animal?cid=${figure.cid}">${figure.name}</a>
+	       			 		<#else>
+	       			 			<#-- unknown entity type -->
+	       			 			${figure.name}
+	       			 		</#if>
+	       			 		<#-- END -->
+	       			 	</td>
+	       			 	<td>
+	    					<#if figure.type == 'person'>
+	       			 			Person
+	       			 		<#elseif figure.type == 'animal'>
+	       			 			Tier
+	       			 		<#else>
+	       			 			Unbekannt
+	       			 		</#if>
+	    				</td> 
+	    			</tr>
+	    			</#list>
+	    			
+	  			</table>
+			</div>
+			
+			<div id="houses">
+				<h1>Häuser</h1>
+				<table class="houses_table">
+	    			<tr>
+	       				 <th>Name</th> 
+	    			</tr>
+	    			
+	    			<#list houses as house>
+	    			<tr>
+	    				<td>
+	    					<a href="house?hid=${house.hid}">${house.name}</a>
+	    				</td>
+	    			</tr>
+	    			</#list>
+	    			
+	  			</table>
+			</div>
+			
+			<div id="seasons">
+				<h1>Staffeln</h1>
+				<table class="seasons_table">
+	    			<tr>
+	       				 <th>Nummer</th> 
+	    			</tr>
+	    			
+	    			<#list seasons as season>
+	    			<tr>
+	    				<td>
+	    					<a href="season?sid=${season.sid}">Staffel ${season.number}</a>
+	    				</td>
+	    			</tr>
+	    			</#list>
+	    			
+	  			</table>
+			</div>
+			
+			<div id="playlists">
+				<h1>Playlisten</h1>
+				<table class="playlists_table">
+	    			<tr>
+	       				 <th>Titel</th> 
+	    			</tr>
+	    			
+	    			<#list playlists as playlist>
+	    			<tr>
+	    				<td>
+	    					<a href="playlist?plid=${playlist.plid}">${playlist.name}</a>
+	    				</td>
+	    			</tr>
+	    			</#list>
+	    			
+	  			</table>
+			</div>
 		</div>
-		
-		<div id="figures">
-			<h1>Figuren</h1>
-			<table class="person_table">
-    			<tr>
-       				 <th>Name</th> 
-    			</tr>
-    			<#list figures as figure>
-    			<tr>
-       			 	<td><a href="person?cid=${figure.cid}">${figure.name}</a></td> 
-    			</tr>
-    			</#list>
-  			</table>
-		</div>
-		
-		<div id="houses">
-		<h1>Häuser</h1>
-		</div>
-		
-		<div id="seasons">
-		<h1>Staffeln</h1>
-		</div>
-		
-		<div id="playlists">
-		<h1>Playlisten</h1>
-		</div>
-		
 	</div>
 </body>
 </html>

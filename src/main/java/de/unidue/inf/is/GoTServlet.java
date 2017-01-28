@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,7 +15,7 @@ import de.unidue.inf.is.utils.DBUtil;
 /**
  * Das könnte die Eintrittsseite sein.
  */
-public final class GoTServlet extends HttpServlet {
+public final class GoTServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -44,9 +43,14 @@ public final class GoTServlet extends HttpServlet {
 		List<Object> playlists	= null;
 		
 		try {
-			figures = GOTDB2PersistenceManager.getInstance().loadEntities(Entity.Figure, 5);
+			
+			figures		=	GOTDB2PersistenceManager.getInstance().loadEntities(Entity.Figure, 5);
+			houses 		=	GOTDB2PersistenceManager.getInstance().loadEntities(Entity.House, 5);
+			seasons		=	GOTDB2PersistenceManager.getInstance().loadEntities(Entity.Season, 5);
+			playlists	=	GOTDB2PersistenceManager.getInstance().loadEntities(Entity.Playlist);
+			
 		} catch (PersistenceManagerException e) {
-			new PersistenceManagerException("Load figures failed", e).printStackTrace();
+			new PersistenceManagerException("Load entities failed", e).printStackTrace();
 		}
 			
 		request.setAttribute("figures", 	figures);

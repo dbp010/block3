@@ -10,7 +10,7 @@ public class House {
 	
 	private String coatofarmspath;
 	
-	private Location seat;
+	private Castle seat;
 
 	public long getHid() {
 		return hid;
@@ -44,11 +44,11 @@ public class House {
 		this.coatofarmspath = coatofarmspath;
 	}
 
-	public Location getSeat() {
+	public Castle getSeat() {
 		return seat;
 	}
 
-	public void setSeat(Location seat) {
+	public void setSeat(Castle seat) {
 		this.seat = seat;
 	}
 
