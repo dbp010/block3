@@ -1,7 +1,6 @@
 package de.unidue.inf.is;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -10,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
-import de.unidue.inf.is.dbp010.db.entity.Person;
+import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 import de.unidue.inf.is.utils.DBUtil;
 
@@ -38,17 +37,22 @@ public final class GoTServlet extends HttpServlet {
 			request.setAttribute("db2exists", "nicht vorhanden :-(");
 			System.out.println("Datenbank " + databaseToCheck + " nicht vorhanden :-(");
 		}
-
-		List<Person> pl  = new ArrayList<>();
-		Person p = new Person();
-		p.setCid(45345345);
-		p.setName("Klaus");
-		pl.add(p);
 		
-		/* fetch person via persistence manager */
+		List<Object> figures 	= null;
+		List<Object> houses		= null;
+		List<Object> seasons	= null;
+		List<Object> playlists	= null;
 		
-		
-		request.setAttribute("persons", pl);
+		try {
+			figures = GOTDB2PersistenceManager.getInstance().loadEntities(Entity.Figure, 5);
+		} catch (PersistenceManagerException e) {
+			new PersistenceManagerException("Load figures failed", e).printStackTrace();
+		}
+			
+		request.setAttribute("figures", 	figures);
+		request.setAttribute("seasons", 	seasons);
+		request.setAttribute("houses", 		houses);
+		request.setAttribute("playlists", 	playlists);
 		
 		request.getRequestDispatcher("got_start.ftl").forward(request, response);
 	}

@@ -5,6 +5,22 @@ public class Person extends Character {
 	private String title;
 	
 	private String biografie;
+	
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getBiografie() {
+		return biografie;
+	}
+
+	public void setBiografie(String biografie) {
+		this.biografie = biografie;
+	}
 
 	@Override
 	public int hashCode() {

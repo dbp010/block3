@@ -51,9 +51,9 @@ body{
     			<tr>
        				 <th>Name</th> 
     			</tr>
-    			<#list persons as person>
+    			<#list figures as figure>
     			<tr>
-       			 	<td><a href="person?cid=${person.cid}">${person.name}</a></td> 
+       			 	<td><a href="person?cid=${figure.cid}">${figure.name}</a></td> 
     			</tr>
     			</#list>
   			</table>
