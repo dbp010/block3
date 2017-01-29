@@ -16,7 +16,9 @@ import de.unidue.inf.is.dbp010.db.entity.Episode;
 import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.db.entity.Location;
 import de.unidue.inf.is.dbp010.db.entity.Person;
+import de.unidue.inf.is.dbp010.db.entity.Rating;
 import de.unidue.inf.is.dbp010.db.entity.Season;
+import de.unidue.inf.is.dbp010.db.entity.User;
 import de.unidue.inf.is.dbp010.db.util.Belonging;
 import de.unidue.inf.is.dbp010.db.util.Figure;
 import de.unidue.inf.is.dbp010.db.util.Member;
@@ -107,6 +109,22 @@ public class GOTDB2PersistenceManager {
 	
 	private static final String LOAD_EPISODES_BY_SID_QUERY
 														=	"SELECT * FROM episodes e WHERE e.sid = ? ";
+
+	private static final String LOAD_RATINGS_FOR_CHARACTER_QUERY 
+														= 	" SELECT * FROM rat_for_char rc "
+														+ 	" RIGHT JOIN rating r ON rc.rid = r.rid WHERE rc.cid = ? ";
+
+	private static final String LOAD_RATINGS_FOR_EPISODE_QUERY 
+														= 	" SELECT * FROM rat_for_epi re "
+														+ 	" RIGHT JOIN rating r ON re.rid = r.rid WHERE re.eid = ? ";
+
+	private static final String LOAD_RATINGS_FOR_HOUSE_QUERY 
+														= 	" SELECT * FROM rat_for_house rh "
+														+ 	" RIGHT JOIN rating r ON rh.rid = r.rid WHERE rh.hid = ? ";
+
+	private static final String LOAD_RATINGS_FOR_SEASON_QUERY 
+														= 	" SELECT * FROM rat_for_sea rs "
+														+ 	" RIGHT JOIN rating r ON rs.rid = r.rid WHERE rs.sid = ? ";
 	
 	public static enum Entity {
 		Figure, Person, Animal, Castle, Episode, House, Location, Rating, Season, User, Playlist, Relationship, Member, Belonging
@@ -413,9 +431,26 @@ public class GOTDB2PersistenceManager {
 		return house;
 	}
 
-	private Object createUser(ResultSet resultSet) {
-		// TODO Auto-generated method stub
-		return null;
+	private Object createUser(ResultSet resultSet) throws PersistenceManagerException {
+		User	user 	= 	new User();
+
+		try {
+			long	usid 			= 	resultSet.getLong(		"USID");
+			String	login			=	resultSet.getString(	"LOGIN");
+			String	name			=	resultSet.getString(	"NAME");
+			String	password		=	resultSet.getString(	"PASSWORT");
+			
+			user.setUsid(usid);
+			user.setLogin(login);
+			user.setName(name);
+			user.setPassword(password);
+			
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException("Create rating object from result set failed", e);
+		}
+		
+		return user;
 	}
 
 	private Season createSeason(ResultSet resultSet) throws PersistenceManagerException {
@@ -439,9 +474,27 @@ public class GOTDB2PersistenceManager {
 		return season;
 	}
 
-	private Object createRating(ResultSet resultSet) {
-		// TODO Auto-generated method stub
-		return null;
+	private Rating createRating(ResultSet resultSet) throws PersistenceManagerException {
+		Rating	rating = new Rating();
+
+		try {
+			long	rid 			= 	resultSet.getLong(		"RID");
+			long	usid			=	resultSet.getLong(		"USID");
+			int		i_rating		=	resultSet.getInt(		"RATING");
+			String	text			=	resultSet.getString(	"TEXT");
+			
+			User	user	=	(User) loadEntity(usid, Entity.User);
+			
+			rating.setRid(rid);
+			rating.setRating(i_rating);
+			rating.setText(text);
+			rating.setUser(user);
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException("Create rating object from result set failed", e);
+		}
+		
+		return rating;
 	}
 	
 	private Figure createFigure(ResultSet resultSet) throws PersistenceManagerException{
@@ -638,5 +691,25 @@ public class GOTDB2PersistenceManager {
 	public List<Object> loadEpisodesBySid(long sid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_EPISODES_BY_SID_QUERY, sid);
 		return loadEntities(resultSet, Entity.Episode);
+	}
+
+	public List<Object> loadRatingsForCharacter(long cid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_CHARACTER_QUERY, cid);
+		return loadEntities(resultSet, Entity.Rating);
+	}
+
+	public List<Object> loadRatingsForEpisode(long eid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_EPISODE_QUERY, eid);
+		return loadEntities(resultSet, Entity.Rating);
+	}
+
+	public List<Object> loadRatingsForHouse(long hid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_HOUSE_QUERY, hid);
+		return loadEntities(resultSet, Entity.Rating);
+	}
+
+	public List<Object> loadRatingsForSeason(long sid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_SEASON_QUERY, sid);
+		return loadEntities(resultSet, Entity.Rating);
 	}
 }

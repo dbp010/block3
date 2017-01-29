@@ -9,8 +9,8 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Animal;
 
-public class AnimalServlet extends AGoTBasicServlet {
-
+public class AnimalServlet extends AGoTServlet {
+	
 	public AnimalServlet() {
 		super("animal.ftl");
 	}
@@ -21,9 +21,16 @@ public class AnimalServlet extends AGoTBasicServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		
-		Animal 	animal 	= 	(Animal) 	loadEntity(req, "cid", Entity.Animal, pm);
+		Animal 			animal 		= 	(Animal) 	loadEntity(req, "cid", Entity.Animal, pm);
 		
+		if(animal != null) {
+			
+			addRatingAttributes(RatingType.Character, animal.getCid(), pm, req, resp);
 		
-		req.setAttribute("animal", animal);
+		}
+		
+		req.setAttribute("animal", 		animal);
 	}
+
+	
 }

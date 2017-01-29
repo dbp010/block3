@@ -11,7 +11,7 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Episode;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class EpisodeServlet extends AGoTBasicServlet {
+public class EpisodeServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -42,6 +42,7 @@ public class EpisodeServlet extends AGoTBasicServlet {
 				throw new IOException("Load locations by eid: " + episode.getEid() + " failed", e);
 			}
 			
+			addRatingAttributes(RatingType.Episode, episode.getEid(), pm, req, resp);
 		}
 		
 		req.setAttribute("episode", 	episode);

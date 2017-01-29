@@ -11,7 +11,7 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Person;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class PersonServlet extends AGoTBasicServlet {
+public class PersonServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -47,6 +47,8 @@ public class PersonServlet extends AGoTBasicServlet {
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load members by person: " + person.getCid() + " failed", e);
 			}
+			
+			addRatingAttributes(RatingType.Character, person.getCid(), pm, req, resp);
 		}
 		
 		req.setAttribute("person", 			person);

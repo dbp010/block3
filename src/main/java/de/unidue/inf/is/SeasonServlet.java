@@ -11,7 +11,7 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Season;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class SeasonServlet extends AGoTBasicServlet {
+public class SeasonServlet extends AGoTServlet {
 
 	public SeasonServlet() {
 		super("season.ftl");
@@ -34,6 +34,8 @@ public class SeasonServlet extends AGoTBasicServlet {
 			} catch(PersistenceManagerException e){
 				throw new IOException("Load episodes by sid: " + season.getSid() + " failed", e);
 			}
+			
+			addRatingAttributes(RatingType.Season, season.getSid(), pm, req, resp);
 		}
 		
 		req.setAttribute("season", 		season);

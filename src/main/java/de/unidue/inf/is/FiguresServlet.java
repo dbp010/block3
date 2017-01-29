@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 
-public class FiguresServlet extends AGoTBasicServlet {
+public class FiguresServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 

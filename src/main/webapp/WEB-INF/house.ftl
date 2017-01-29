@@ -63,6 +63,10 @@
     			</tr>
 	    	</#list>
 		</table>
+		
+		<#assign rating_type = "house">
+		<#include "common/ratings.ftl">
+		
 	</div>
 <#else>
 

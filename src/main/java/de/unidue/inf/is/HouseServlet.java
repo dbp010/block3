@@ -11,7 +11,7 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class HouseServlet extends AGoTBasicServlet {
+public class HouseServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 
@@ -41,6 +41,8 @@ public class HouseServlet extends AGoTBasicServlet {
 			} catch (PersistenceManagerException e) {
 				new PersistenceManagerException("Load belongings by house hid: " + house.getHid() + " failed", e).printStackTrace();
 			}
+			
+			addRatingAttributes(RatingType.House, house.getHid(), pm, req, resp);
 		}
 		
 		req.setAttribute("house", 			house);

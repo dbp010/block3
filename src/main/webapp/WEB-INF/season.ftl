@@ -38,6 +38,11 @@
     			</tr>
 	    	</#list>
 		</table>
+		
+		<#assign rating_type = "season">
+		<#include "common/ratings.ftl">
+
+
 	</div>
 <#else>
 

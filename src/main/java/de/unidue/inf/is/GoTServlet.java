@@ -13,7 +13,7 @@ import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 /**
  * Das ist die Eintrittsseite.
  */
-public class GoTServlet extends AGoTBasicServlet {
+public class GoTServlet extends AGoTServlet {
 
 	private static final long serialVersionUID = 1L;
 	

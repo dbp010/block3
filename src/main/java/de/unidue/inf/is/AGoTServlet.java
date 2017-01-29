@@ -1,18 +1,80 @@
 package de.unidue.inf.is;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
+import de.unidue.inf.is.dbp010.db.entity.Rating;
+import de.unidue.inf.is.dbp010.db.entity.User;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public abstract class AGoTServlet extends HttpServlet {
-
+	
 	private static final long serialVersionUID = 1L;
+	
+	protected static final String	DEFAULT_LOGIN_DISPATCH_LOCATION 	= 	"login";
+	
+	protected static final String	USER_ATTRIBUTE_NAME					=	"user";
+	
+	protected enum RatingType {
+		Character, Episode, House, Season
+	}
+	
+	private final String templateName;
+	
+	private final String loginDispatchLocation;
+	
+	protected boolean loginNecessary = true;
+	
+	public AGoTServlet(String templateName) {
+		this(templateName, DEFAULT_LOGIN_DISPATCH_LOCATION);
+	}
+	
+	public AGoTServlet(String templateName, String loginTemplateName) {
+		this.templateName 			= templateName;
+		this.loginDispatchLocation 	= loginTemplateName;
+	}
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		
+		if(loginNecessary && getUser(req, resp) == null) {
+			req.getRequestDispatcher(loginDispatchLocation).forward(req, resp);
+			return;
+		}
+		
+		GOTDB2PersistenceManager pm = connect();
+		
+		appendAttributes(pm, req, resp);
+		
+		disconnect(pm);
+		
+		req.getRequestDispatcher(templateName).forward(req, resp);
+		
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		doGet(req, resp);
+	}
+	
+	protected User getUser(HttpServletRequest req, HttpServletResponse resp) {
+		HttpSession session = req.getSession(false);
+		return session == null ? null : (User) session.getAttribute("user");
+	}
+
+	protected void setUser(User user, HttpServletRequest req, HttpServletResponse resp) {
+		HttpSession session = req.getSession(true);
+		session.setAttribute(USER_ATTRIBUTE_NAME, user);
+	}
 	
 	protected Object loadEntity(HttpServletRequest req, String idParamName, Entity type, GOTDB2PersistenceManager pm) throws IOException {
 		
@@ -72,5 +134,66 @@ public abstract class AGoTServlet extends HttpServlet {
 			throw new IOException();
 		}
 	}
+	
+	protected void addRatingAttributes(RatingType type, long id, GOTDB2PersistenceManager pm,
+	HttpServletRequest req, 	HttpServletResponse resp) throws IOException {
+		
+		Rating			userRating	=	null;
+		List<Object>	ratings		=	null;
+		
+		switch(type){
+			case Character:
+			try {
+				ratings		=	pm.loadRatingsForCharacter(id);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Load ratings for character: " + id + " failed", e);
+			}
+				break;
+			case Episode:
+			try {
+				ratings		=	pm.loadRatingsForEpisode(id);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Load ratings for episode: " + id + " failed", e);
+			}
+				break;
+			case House:
+			try {
+				ratings		=	pm.loadRatingsForHouse(id);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Load ratings for house: " + id + " failed", e);
+			}
+				break;
+			case Season:
+			try {
+				ratings		=	pm.loadRatingsForSeason(id);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Load ratings for season: " + id + " failed", e);
+			}
+				break;
+			default:
+		}
+		
+		User	user	=	getUser(req, resp);
+		
+		if(ratings != null && user != null) {
+			for(Iterator<Object> i = ratings.iterator(); i.hasNext(); ){
+				
+				Rating rating = (Rating)i.next();
+				
+				if(rating.getUser().getUsid() == user.getUsid()){
+					userRating = rating;
+					i.remove();
+					break;
+				}
+				
+			}
+		}
+		
+		req.setAttribute("user_rating", userRating);
+		req.setAttribute("ratings",		ratings);
+	}
+	
+	protected abstract void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
+	throws IOException;
 	
 }

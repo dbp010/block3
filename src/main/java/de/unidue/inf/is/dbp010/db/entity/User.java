@@ -4,7 +4,7 @@ public class User {
 
 	private long usid;
 	
-	private String longin;
+	private String login;
 	
 	private String Name;
 	
@@ -18,12 +18,12 @@ public class User {
 		this.usid = usid;
 	}
 
-	public String getLongin() {
-		return longin;
+	public String getLogin() {
+		return login;
 	}
 
-	public void setLongin(String longin) {
-		this.longin = longin;
+	public void setLogin(String login) {
+		this.login = login;
 	}
 
 	public String getName() {
@@ -47,7 +47,7 @@ public class User {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((Name == null) ? 0 : Name.hashCode());
-		result = prime * result + ((longin == null) ? 0 : longin.hashCode());
+		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + (int) (usid ^ (usid >>> 32));
 		return result;
@@ -67,10 +67,10 @@ public class User {
 				return false;
 		} else if (!Name.equals(other.Name))
 			return false;
-		if (longin == null) {
-			if (other.longin != null)
+		if (login == null) {
+			if (other.login != null)
 				return false;
-		} else if (!longin.equals(other.longin))
+		} else if (!login.equals(other.login))
 			return false;
 		if (password == null) {
 			if (other.password != null)
@@ -84,6 +84,6 @@ public class User {
 
 	@Override
 	public String toString() {
-		return "User [usid=" + usid + ", longin=" + longin + ", Name=" + Name + ", password=" + password + "]";
+		return "User [usid=" + usid + ", login=" + login + ", Name=" + Name + ", password=" + password + "]";
 	}
 }

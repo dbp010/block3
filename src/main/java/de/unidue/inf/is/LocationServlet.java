@@ -13,7 +13,7 @@ import de.unidue.inf.is.dbp010.db.entity.Location;
 import de.unidue.inf.is.dbp010.db.util.Belonging;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class LocationServlet extends AGoTBasicServlet {
+public class LocationServlet extends AGoTServlet {
 
 	public LocationServlet() {
 		super("location.ftl");
