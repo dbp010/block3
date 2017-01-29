@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	version="3.0">
 
-	<display-name>GoT</display-name>
+	<display-name>GoT DBP010</display-name>
 
 	<servlet>
 		<servlet-name>freemarker</servlet-name>
@@ -47,16 +47,6 @@
 		<servlet-name>freemarker</servlet-name>
 		<url-pattern>*.ftl</url-pattern>
 	</servlet-mapping>
-
-	<servlet>
-		<servlet-name>hello_servlet</servlet-name>
-		<servlet-class>de.unidue.inf.is.HelloServlet</servlet-class>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>hello_servlet</servlet-name>
-		<url-pattern>/hello</url-pattern>
-	</servlet-mapping>
 	
 	<servlet>
 		<servlet-name>got_servlet</servlet-name>
@@ -98,6 +88,65 @@
 		<url-pattern>/house</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>location_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.LocationServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>location_servlet</servlet-name>
+		<url-pattern>/location</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>episode_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.EpisodeServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>episode_servlet</servlet-name>
+		<url-pattern>/episode</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>season_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.SeasonServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>season_servlet</servlet-name>
+		<url-pattern>/season</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>figures_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.FiguresServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>figures_servlet</servlet-name>
+		<url-pattern>/figures</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>houses_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.HousesServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>houses_servlet</servlet-name>
+		<url-pattern>/houses</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>seasons_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.SeasonsServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>seasons_servlet</servlet-name>
+		<url-pattern>/seasons</url-pattern>
+	</servlet-mapping>
 	
 	<!-- Prevent the visiting of MVC Views from outside the servlet container. 
 		RequestDispatcher.forward/include should and will still work. Removing this 

@@ -3,7 +3,6 @@ package de.unidue.inf.is;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,14 +11,19 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class HouseServlet extends AGoTServlet {
+public class HouseServlet extends AGoTBasicServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	public HouseServlet() {
+		super("house.ftl");
+	}
+	
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		
-		House			house	=	(House) loadEntity(req, "hid", Entity.House);
+	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
+	throws IOException {
+
+		House			house	=	(House) loadEntity(req, "hid", Entity.House, pm);
 
 		List<Object>	members			= null;
 		List<Object> 	belongings 		= null;
@@ -27,13 +31,13 @@ public class HouseServlet extends AGoTServlet {
 		if(house != null){
 			
 			try {
-				members		= GOTDB2PersistenceManager.getInstance().loadMembersByHid(house.getHid());
+				members		= pm.loadMembersByHid(house.getHid());
 			} catch (PersistenceManagerException e) {
 				new PersistenceManagerException("Load members by house hid: " + house.getHid() + " failed", e).printStackTrace();
 			}
 			
 			try {
-				belongings	= GOTDB2PersistenceManager.getInstance().loadBelongingsByHid(house.getHid());
+				belongings	= pm.loadBelongingsByHid(house.getHid());
 			} catch (PersistenceManagerException e) {
 				new PersistenceManagerException("Load belongings by house hid: " + house.getHid() + " failed", e).printStackTrace();
 			}
@@ -42,9 +46,6 @@ public class HouseServlet extends AGoTServlet {
 		req.setAttribute("house", 			house);
 		req.setAttribute("belongings", 		belongings);
 		req.setAttribute("members", 		members);
-		
-		req.getRequestDispatcher("house.ftl").forward(req, resp);
-		 
 	}
 	
 }

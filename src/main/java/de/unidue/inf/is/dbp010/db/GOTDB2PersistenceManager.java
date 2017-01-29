@@ -25,25 +25,19 @@ import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 import de.unidue.inf.is.utils.DBUtil;
 
 public class GOTDB2PersistenceManager {
-	
-	private static GOTDB2PersistenceManager instance;
-	
-	public static GOTDB2PersistenceManager getInstance(){
-		if(instance == null){
-			instance = new GOTDB2PersistenceManager();
-		}
-		return instance;
-	}
 
 	private static final String DATABASE_NAME = "mygot";
 	
-	private static final String LOAD_FIGURE_QUERY		= 	"SELECT cid, name, type FROM ( "
+	private static final String FIGURE_TABLE_QUERY
+														= 	" SELECT cid, name, type FROM ( "
 														+		"(SELECT p.pid AS cid, c.name, 'person' as type "
 														+			"FROM person AS p, characters AS c WHERE c.cid = p.pid)"
 														+	"UNION "
 														+		"(SELECT a.aid AS cid, c.name, 'animal' AS type "
-														+			"FROM animal AS a, characters AS c WHERE c.cid = a.aid)) "
-														+ 	"WHERE cid = ? ";
+														+			"FROM animal AS a, characters AS c WHERE c.cid = a.aid)) ";
+	
+	private static final String LOAD_FIGURE_QUERY		=	FIGURE_TABLE_QUERY
+														+ 	" WHERE cid = ? ";
 	
 	private static final String LOAD_PERSON_QUERY 		= 	"SELECT * FROM characters c LEFT JOIN person p ON c.cid = p.pid WHERE c.cid = ? ";
 	private static final String LOAD_ANIMAL_QUERY 		= 	"SELECT * FROM characters c LEFT JOIN animal a ON c.cid = a.aid WHERE c.cid = ? ";
@@ -56,14 +50,8 @@ public class GOTDB2PersistenceManager {
 	private static final String LOAD_USER_QUERY 		= 	"SELECT * FROM users WHERE usid = ? ";
 	private static final String LOAD_PLAYLIST_QUERY 	= 	"SELECT * FROM playlist p WHERE p.plid = ? ";
 	
-	private static final String LOAD_FIGURES_QUERY		=	"SELECT cid, name, type FROM ( "
-														+		"(SELECT p.pid AS cid, c.name, 'person' as type "
-														+			"FROM person AS p, characters AS c WHERE c.cid = p.pid)"
-														+	"UNION "
-														+		"(SELECT a.aid AS cid, c.name, 'animal' AS type "
-														+			"FROM animal AS a, characters AS c WHERE c.cid = a.aid)) "
-														+ 	"ORDER BY cid ASC "
-														;
+	private static final String LOAD_FIGURES_QUERY		=	FIGURE_TABLE_QUERY
+														+ 	" ORDER BY cid ASC ";
 	
 	private static final String LOAD_HOUSES_QUERY		=	"SELECT * FROM houses h "
 														+	"ORDER BY h.hid DESC ";
@@ -89,25 +77,58 @@ public class GOTDB2PersistenceManager {
 	
 	private static final String LOAD_BELONGINGS_BY_HID_QUERY
 														=	"SELECT * FROM belongs_to b WHERE b.hid = ?";
+
+	private static final String LOAD_ACTUAL_BELONGING_BY_LID_QUERY 	
+														= 	"SELECT * FROM belongs_to b LEFT JOIN episodes e "
+														+ 	"ON b.episode_from = e.eid WHERE b.lid = ? "
+														+ 	"ORDER BY e.releasedate DESC "
+														+ 	"FETCH FIRST 1 ROWS ONLY ";
+
+	private static final String LOAD_CASTLE_BY_LID_QUERY
+														= 	"SELECT * FROM castle c WHERE c.location = ?";
+
+	private static final String LOAD_PERSONS_BY_BIRTHPLACE_QUERY 
+														= 	"SELECT * FROM characters c LEFT JOIN person p ON c.cid = p.pid WHERE c.birthplace = ? ";
 	
-	// dynamic usable auxiliary SQL snipplets
-//	private static final String FETCH_ROW_COUNT_SNIPPLET 		= "FETCH FIRST ? ROWS ONLY";
+	private static final String LOAD_EPISODES_BY_LID_QUERY	
+														=	"SELECT * FROM loc_for_epi l "
+														+ 	"RIGHT JOIN episodes e "
+														+ 	"ON l.eid = e.eid "
+														+ 	"WHERE l.lid = ?";
+	
+	private static final String LOAD_FIGURES_BY_EID_QUERY
+														=	"SELECT * FROM ( "
+														+	FIGURE_TABLE_QUERY
+														+	" ) AS f LEFT JOIN char_for_epi c "
+														+	" ON f.cid = c.cid WHERE c.eid = ? ";
+	
+	private static final String LOAD_LOCATIONS_BY_EID_QUERY
+														=	"SELECT * FROM location l LEFT JOIN loc_for_epi lo ON l.lid = lo.lid AND lo.eid = ?";
+	
+	private static final String LOAD_EPISODES_BY_SID_QUERY
+														=	"SELECT * FROM episodes e WHERE e.sid = ? ";
 	
 	public static enum Entity {
 		Figure, Person, Animal, Castle, Episode, House, Location, Rating, Season, User, Playlist, Relationship, Member, Belonging
 	}
 
-	private GOTDB2PersistenceManager() {}
+	private Connection connection;
 	
-	private Connection getConnection() throws SQLException{
-		return DBUtil.getExternalConnection(DATABASE_NAME);
+	public void connect() throws PersistenceManagerException {
+		try {
+			connection = DBUtil.getExternalConnection(DATABASE_NAME);
+		} catch (SQLException e) {
+			throw new PersistenceManagerException("Establish connection to database failed", e);
+		}
 	}
 	
-	public Object loadEntity(long id, Entity type) throws PersistenceManagerException {
-		try (Connection con = getConnection()){
-			return loadEntity(id, type, con);
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entity with id:" + id + " and type: " + type + " failed", e);
+	public void disconnect() throws PersistenceManagerException {
+		if(connection == null) return;
+		
+		try {
+			connection.close();
+		} catch (SQLException e) {
+			throw new PersistenceManagerException("Close connection to database failed", e);
 		}
 	}
 	
@@ -152,39 +173,27 @@ public class GOTDB2PersistenceManager {
 			throw new PersistenceManagerException("Load entities not defined for entity type: " + type);
 		}
 		
-		try (Connection connection = getConnection()){
-//			PreparedStatement pstmt;			
+		try {
 			
 			if(count >= 1){
-				// This is strangely NOT working ... :(
-				//{
-//				query += FETCH_ROW_COUNT_SNIPPLET;
-//				pstmt = connection.prepareStatement(query);
-//				pstmt.setString(1, String.valueOf(count));
-				//}
 				query += "FETCH FIRST " + count + " ROWS ONLY";
 			}
-//			else{
-//				pstmt = connection.prepareStatement(query);
-//			}
-			
-//			ResultSet resultSet = executeLoadQuery(query, count, connection);
-			
-			ResultSet resultSet = executeQuery(query, connection);
-			return loadEntities(resultSet, type, connection);
+
+			ResultSet resultSet = executeQuery(query);
+			return loadEntities(resultSet, type);
 			
 		} catch (SQLException e) {
 			throw new PersistenceManagerException("Failed to load " + ((count < 0) ? "all" : count ) + " entities of type " + type + " from database", e);
 		}
 	}
 
-	private ResultSet executeQuery(String query, Connection connection) throws SQLException {
+	private ResultSet executeQuery(String query) throws SQLException {
 		Statement stmt = connection.createStatement();
 		ResultSet resultSet = stmt.executeQuery(query);
 		return (resultSet == null || !resultSet.next()) ? null : resultSet;
 	}
 
-	private List<Object> loadEntities(ResultSet resultSet, Entity type, Connection connection) throws PersistenceManagerException {
+	private List<Object> loadEntities(ResultSet resultSet, Entity type) throws PersistenceManagerException {
 		try {
 
 			if (resultSet == null) return Collections.emptyList();
@@ -192,7 +201,7 @@ public class GOTDB2PersistenceManager {
 			List<Object> objects = new ArrayList<>();
 			
 			do {
-				Object object = createObject(type, resultSet, connection);
+				Object object = createObject(type, resultSet);
 				objects.add(object);
 			} while (resultSet.next());
 
@@ -204,7 +213,7 @@ public class GOTDB2PersistenceManager {
 		}
 	}
 
-	private Object loadEntity(long id, Entity type, Connection connection) throws PersistenceManagerException{
+	public Object loadEntity(long id, Entity type) throws PersistenceManagerException {
 		String 		loadQuery;
 		
 			switch(type) {
@@ -245,11 +254,11 @@ public class GOTDB2PersistenceManager {
 				throw new PersistenceManagerException("Load entity not defined for entity type: " + type);
 			}
 
-			ResultSet resultSet = executeLoadQuery(loadQuery, id, connection);
-			return createObject(type, resultSet, connection);
+			ResultSet resultSet = executeLoadQuery(loadQuery, id);
+			return createObject(type, resultSet);
 	}
 
-	private ResultSet executeLoadQuery(String loadQuery, long id, Connection connection) throws PersistenceManagerException {
+	private ResultSet executeLoadQuery(String loadQuery, long id) throws PersistenceManagerException {
 		try {
 
 			PreparedStatement loadStatement = connection.prepareStatement(loadQuery);
@@ -264,7 +273,7 @@ public class GOTDB2PersistenceManager {
 		}
 	}
 	
-	private Object createObject(Entity type, ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Object createObject(Entity type, ResultSet resultSet) throws PersistenceManagerException {
 		
 		if(resultSet == null)	return null;
 		
@@ -272,37 +281,37 @@ public class GOTDB2PersistenceManager {
 		switch(type) {
 			
 			case Figure:
-				return createFigure(resultSet, connection);
+				return createFigure(resultSet);
 			case Person:
-				return createPerson(resultSet, connection);
+				return createPerson(resultSet);
 			case Animal:
-				return createAnimal(resultSet, connection);
+				return createAnimal(resultSet);
 			case Castle:
-				return createCastle(resultSet, connection);
+				return createCastle(resultSet);
 			case Episode:
-				return createEpisode(resultSet, connection);
+				return createEpisode(resultSet);
 			case House:
-				return createHouse(resultSet, connection);
+				return createHouse(resultSet);
 			case Location:
-				return createLocation(resultSet, connection);
+				return createLocation(resultSet);
 			case Rating:
-				return createRating(resultSet, connection);
+				return createRating(resultSet);
 			case Season:
-				return createSeason(resultSet, connection);
+				return createSeason(resultSet);
 			case User:
-				return createUser(resultSet, connection);
+				return createUser(resultSet);
 			case Relationship:
-				return createRelationship(resultSet, connection);
+				return createRelationship(resultSet);
 			case Member:
-				return createMember(resultSet, connection);
+				return createMember(resultSet);
 			case Belonging:
-				return createBelonging(resultSet, connection);
+				return createBelonging(resultSet);
 			default:
 				throw new PersistenceManagerException("Unknown entity type: " + type);
 		}
 	}
 
-	private Belonging createBelonging(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Belonging createBelonging(ResultSet resultSet) throws PersistenceManagerException {
 		Belonging	belonging	=	new Belonging();
 		
 		try {
@@ -312,10 +321,10 @@ public class GOTDB2PersistenceManager {
 			long	episode_from_id	=	resultSet.getLong(		"EPISODE_FROM");
 			long	episode_to_id	=	resultSet.getLong(		"EPISODE_TO");
 			
-			Location	location		= 	(Location)	loadEntity(lid,				Entity.Location, 	connection);
-			House		house			= 	(House) 	loadEntity(hid,				Entity.House, 		connection);
-			Episode		episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode, 	connection);
-			Episode		episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode, 	connection);
+			Location	location		= 	(Location)	loadEntity(lid,				Entity.Location);
+			House		house			= 	(House) 	loadEntity(hid,				Entity.House);
+			Episode		episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode);
+			Episode		episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode);
 			
 			belonging.setLocation(location);
 			belonging.setHouse(house);
@@ -329,7 +338,7 @@ public class GOTDB2PersistenceManager {
 		return belonging;
 	}
 
-	private Member createMember(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Member createMember(ResultSet resultSet) throws PersistenceManagerException {
 		Member 		member = new Member();
 
 		try {
@@ -339,10 +348,10 @@ public class GOTDB2PersistenceManager {
 			long	episode_from_id	=	resultSet.getLong(		"EPISODE_FROM");
 			long	episode_to_id	=	resultSet.getLong(		"EPISODE_TO");
 			
-			Person	person			= 	(Person)	loadEntity(pid,				Entity.Person,	connection);
-			House	house			= 	(House) 	loadEntity(hid,				Entity.House,	connection);
-			Episode	episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode,	connection);
-			Episode	episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode,	connection);
+			Person	person			= 	(Person)	loadEntity(pid,				Entity.Person);
+			House	house			= 	(House) 	loadEntity(hid,				Entity.House);
+			Episode	episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode);
+			Episode	episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode);
 			
 			member.setPerson(person);
 			member.setHouse(house);
@@ -356,7 +365,7 @@ public class GOTDB2PersistenceManager {
 		return member;
 	}
 
-	private Relationship createRelationship(ResultSet resultSet, Connection connection) throws PersistenceManagerException{
+	private Relationship createRelationship(ResultSet resultSet) throws PersistenceManagerException{
 		Relationship relationship = new Relationship();
 
 		try {
@@ -365,8 +374,8 @@ public class GOTDB2PersistenceManager {
 			long	targetpid		= 	resultSet.getLong(		"TARGETPID");
 			String	rel_type		=	resultSet.getString(	"REL_TYPE");
 						
-			Person sourcep			= 	(Person) loadEntity(sourcepid, Entity.Person,	connection);
-			Person targetp			= 	(Person) loadEntity(targetpid, Entity.Person,	connection);
+			Person sourcep			= 	(Person) loadEntity(sourcepid, Entity.Person);
+			Person targetp			= 	(Person) loadEntity(targetpid, Entity.Person);
 			
 			relationship.setSourcep(sourcep);
 			relationship.setTargetp(targetp);
@@ -379,7 +388,7 @@ public class GOTDB2PersistenceManager {
 		return relationship;
 	}
 
-	private House createHouse(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private House createHouse(ResultSet resultSet) throws PersistenceManagerException {
 		House house = new House();
 
 		try {
@@ -389,7 +398,7 @@ public class GOTDB2PersistenceManager {
 			String	coatofarmspath	=	resultSet.getString(	"COATOFARMSPATH");
 			long	seatId			=	resultSet.getLong(		"SEAT");
 			
-			Castle seat 			=	(Castle) loadEntity(seatId, Entity.Castle ,	connection);
+			Castle seat 			=	(Castle) loadEntity(seatId, Entity.Castle);
 			
 			house.setHid(hid);
 			house.setName(name);
@@ -404,12 +413,12 @@ public class GOTDB2PersistenceManager {
 		return house;
 	}
 
-	private Object createUser(ResultSet resultSet, Connection connection) {
+	private Object createUser(ResultSet resultSet) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private Season createSeason(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Season createSeason(ResultSet resultSet) throws PersistenceManagerException {
 		Season season = new Season();
 
 		try {
@@ -430,12 +439,12 @@ public class GOTDB2PersistenceManager {
 		return season;
 	}
 
-	private Object createRating(ResultSet resultSet, Connection connection) {
+	private Object createRating(ResultSet resultSet) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	private Figure createFigure(ResultSet resultSet, Connection connection) throws PersistenceManagerException{
+	private Figure createFigure(ResultSet resultSet) throws PersistenceManagerException{
 		Figure figure = new Figure();
 
 		try {
@@ -454,7 +463,7 @@ public class GOTDB2PersistenceManager {
 		return figure;
 	}
 	
-	private Location createLocation(ResultSet resultSet, Connection connection) throws PersistenceManagerException{
+	private Location createLocation(ResultSet resultSet) throws PersistenceManagerException{
 		Location location = new Location();
 
 		try {
@@ -471,7 +480,7 @@ public class GOTDB2PersistenceManager {
 		return location;
 	}
 
-	private Episode createEpisode(ResultSet resultSet, Connection connection) throws PersistenceManagerException{
+	private Episode createEpisode(ResultSet resultSet) throws PersistenceManagerException{
 		Episode episode = new Episode();
 		
 		try{
@@ -482,7 +491,7 @@ public class GOTDB2PersistenceManager {
 			String	summary 		=	resultSet.getString(	"SUMMARY");
 			Date 	releasedate		= 	resultSet.getDate(		"RELEASEDATE");
 			
-			Season 	season 			= 	(Season)	loadEntity(sid, Entity.Season, connection);
+			Season 	season 			= 	(Season)	loadEntity(sid, Entity.Season);
 
 			episode.setEid(eid);
 			episode.setTitle(title);
@@ -499,7 +508,7 @@ public class GOTDB2PersistenceManager {
 		return episode;
 	}
 	
-	private Castle createCastle(ResultSet resultSet, Connection connection) throws PersistenceManagerException{
+	private Castle createCastle(ResultSet resultSet) throws PersistenceManagerException{
 		Castle castle = new Castle();
 		
 		try{
@@ -507,7 +516,7 @@ public class GOTDB2PersistenceManager {
 			String	name 			= resultSet.getString(	"NAME");
 			long 	locationId 		= resultSet.getLong(	"LOCATION");
 			
-			Location 	location 	= 	(Location)	loadEntity(locationId, Entity.Location, connection);
+			Location 	location 	= 	(Location)	loadEntity(locationId, Entity.Location);
 
 			castle.setCaid(caid);
 			castle.setName(name);
@@ -520,7 +529,7 @@ public class GOTDB2PersistenceManager {
 		return castle;
 	}
 
-	private Animal createAnimal(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Animal createAnimal(ResultSet resultSet) throws PersistenceManagerException {
 		Animal animal = new Animal();
 		
 		try{
@@ -529,8 +538,8 @@ public class GOTDB2PersistenceManager {
 			long 	birthplaceId 	= resultSet.getLong(	"BIRTHPLACE");
 			long	ownerId			= resultSet.getLong(	"OWNER");
 			
-			Location 	birthplace 	= 	(Location)	loadEntity(birthplaceId, Entity.Location, 	connection);
-			Person		owner		=	(Person)	loadEntity(ownerId, Entity.Person, 			connection);
+			Location 	birthplace 	= 	(Location)	loadEntity(birthplaceId,	Entity.Location);
+			Person		owner		=	(Person)	loadEntity(ownerId, 		Entity.Person);
 
 			animal.setCid(cid);
 			animal.setName(name);
@@ -545,7 +554,7 @@ public class GOTDB2PersistenceManager {
 		return animal;
 	}
 
-	private Person createPerson(ResultSet resultSet, Connection connection) throws PersistenceManagerException {
+	private Person createPerson(ResultSet resultSet) throws PersistenceManagerException {
 		
 		Person person = new Person();
 		
@@ -556,7 +565,7 @@ public class GOTDB2PersistenceManager {
 			String 	biografie 		= resultSet.getString(	"BIOGRAFIE");
 			String	title			= resultSet.getString(	"TITLE");
 			
-			Location birthplace 	= (Location)	loadEntity(birthplaceId, Entity.Location, connection);
+			Location birthplace 	= (Location)	loadEntity(birthplaceId, Entity.Location);
 
 			person.setCid(cid);
 			person.setName(name);
@@ -572,63 +581,62 @@ public class GOTDB2PersistenceManager {
 	}
 
 	public List<Object> loadRelationshipsBySourcepid(long sourcepid) throws PersistenceManagerException {
-		try (Connection connection = getConnection()){
-			
-			ResultSet resultSet = executeLoadQuery(LOAD_RELATIONSHIPS_BY_SOURCEPID_QUERY, sourcepid, connection);
-			return loadEntities(resultSet, Entity.Relationship, connection);
-			
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entities of type: " 
-													+ Entity.Relationship + " for sourcepid: " + sourcepid + " failed", e);
-		}
+		ResultSet resultSet = executeLoadQuery(LOAD_RELATIONSHIPS_BY_SOURCEPID_QUERY, sourcepid);
+		return loadEntities(resultSet, Entity.Relationship);
 	}
 
 	public List<Object> loadAnimalsByOwner(long owner) throws PersistenceManagerException {
-		try (Connection connection = getConnection()){
-			
-			ResultSet resultSet = executeLoadQuery(LOAD_ANIMALS_BY_OWNER_QUERY, owner, connection);
-			return loadEntities(resultSet, Entity.Animal, connection);
-			
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entities of type: " 
-													+ Entity.Animal + " for owner: " + owner + " failed", e);
-		}
+		ResultSet resultSet = executeLoadQuery(LOAD_ANIMALS_BY_OWNER_QUERY, owner);
+		return loadEntities(resultSet, Entity.Animal);
 	}
 	
 	public List<Object> loadMembersByPid(long pid) throws PersistenceManagerException {
-		try (Connection connection = getConnection()){
-			
-			ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_PID_QUERY, pid, connection);
-			return loadEntities(resultSet, Entity.Member, connection);
-			
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entities of type: " 
-													+ Entity.Member + " for pid: " + pid + " failed", e);
-		}
+		ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_PID_QUERY, pid);
+		return loadEntities(resultSet, Entity.Member);
 	}
 	
 	public List<Object> loadMembersByHid(long hid) throws PersistenceManagerException {
-		try (Connection connection = getConnection()){
-			
-			ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_HID_QUERY, hid, connection);
-			return loadEntities(resultSet, Entity.Member, connection);
-			
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entities of type: " 
-													+ Entity.Member + " for hid: " + hid + " failed", e);
-		}
+		ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_HID_QUERY, hid);
+		return loadEntities(resultSet, Entity.Member);
 	}
 
 	public List<Object> loadBelongingsByHid(long hid) throws PersistenceManagerException{
-		try (Connection connection = getConnection()){
-			
-			ResultSet resultSet = executeLoadQuery(LOAD_BELONGINGS_BY_HID_QUERY, hid, connection);
-			return loadEntities(resultSet, Entity.Belonging, connection);
-			
-		}catch (SQLException e) {
-			throw new PersistenceManagerException ("Create connection to load entities of type: " 
-													+ Entity.Belonging + " for hid: " + hid + " failed", e);
-		}
-		
+		ResultSet resultSet = executeLoadQuery(LOAD_BELONGINGS_BY_HID_QUERY, hid);
+		return loadEntities(resultSet, Entity.Belonging);
+	}
+	
+	public Belonging loadActualBelongingByLid(long lid) throws PersistenceManagerException{
+		ResultSet resultSet = executeLoadQuery(LOAD_ACTUAL_BELONGING_BY_LID_QUERY, lid);
+		return (Belonging) createObject(Entity.Belonging, resultSet);
+	}
+
+	public Castle loadCastleByLid(long lid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_CASTLE_BY_LID_QUERY, lid);
+		return (Castle) createObject(Entity.Castle, resultSet);
+	}
+
+	public List<Object> loadPerosnsByBirthplace(long lid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_PERSONS_BY_BIRTHPLACE_QUERY, lid);
+		return loadEntities(resultSet, Entity.Person);
+	}
+
+	public List<Object> loadEpisodesByLid(long lid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_EPISODES_BY_LID_QUERY, lid);
+		return loadEntities(resultSet, Entity.Episode);
+	}
+	
+	public List<Object> loadFiguresByEid(long eid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_FIGURES_BY_EID_QUERY, eid);
+		return loadEntities(resultSet, Entity.Figure);
+	}
+	
+	public List<Object> loadLocationsByEid(long eid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_LOCATIONS_BY_EID_QUERY, eid);
+		return loadEntities(resultSet, Entity.Location);
+	}
+	
+	public List<Object> loadEpisodesBySid(long sid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_EPISODES_BY_SID_QUERY, sid);
+		return loadEntities(resultSet, Entity.Episode);
 	}
 }

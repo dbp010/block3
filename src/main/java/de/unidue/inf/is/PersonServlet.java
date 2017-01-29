@@ -3,8 +3,6 @@ package de.unidue.inf.is;
 import java.io.IOException;
 import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,14 +11,18 @@ import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Person;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
-public class PersonServlet extends AGoTServlet {
+public class PersonServlet extends AGoTBasicServlet {
 
 	private static final long serialVersionUID = 1L;
 
+	public PersonServlet() {
+		super("person.ftl");
+	}
+
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		
-		Person 			person			= (Person) loadEntity(req, "cid", Entity.Person);
+		Person 			person			= (Person) loadEntity(req, "cid", Entity.Person, pm);
 
 		List<Object> 	relationships 	= null;
 		List<Object> 	animals 		= null;
@@ -29,21 +31,21 @@ public class PersonServlet extends AGoTServlet {
 		if(person != null){
 			
 			try {
-				relationships	= GOTDB2PersistenceManager.getInstance().loadRelationshipsBySourcepid(person.getCid());
+				relationships	= pm.loadRelationshipsBySourcepid(person.getCid());
 			} catch (PersistenceManagerException e) {
-				new PersistenceManagerException("Load relationships by person cid: " + person.getCid() + " failed", e).printStackTrace();
+				throw new IOException("Load relationships by sourcepid: " + person.getCid() + " failed", e);
 			}
 			
 			try {
-				animals			= GOTDB2PersistenceManager.getInstance().loadAnimalsByOwner(person.getCid());
+				animals			= pm.loadAnimalsByOwner(person.getCid());
 			} catch (PersistenceManagerException e) {
-				new PersistenceManagerException("Load animals by person cid: " + person.getCid() + " failed", e).printStackTrace();
+				throw new IOException("Load animals by owner: " + person.getCid() + " failed", e);
 			}
 			 
 			try {
-				members			= GOTDB2PersistenceManager.getInstance().loadMembersByPid(person.getCid());
+				members			= pm.loadMembersByPid(person.getCid());
 			} catch (PersistenceManagerException e) {
-				new PersistenceManagerException("Load members by person cid: " + person.getCid() + " failed", e).printStackTrace();
+				throw new IOException("Load members by person: " + person.getCid() + " failed", e);
 			}
 		}
 		
@@ -51,8 +53,6 @@ public class PersonServlet extends AGoTServlet {
 		req.setAttribute("members", 		members);
 		req.setAttribute("relationships", 	relationships);
 		req.setAttribute("animals", 		animals);
-		
-		req.getRequestDispatcher("person.ftl").forward(req, resp);
 		 
 	}
 }

@@ -1,43 +1,39 @@
-<html>
-<head><title>GoT Datenbank</title>
-<style type="text/css">
-* {
-   margin:0;
-   padding:0;
-}
+<#include "common/html_begin.ftl">
 
-body{
-   text-align:center;
-   background: #efe4bf none repeat scroll 0 0;
-}
+<#-- START: BODY CONTENT GOES HERE -->
 
-#wrapper{
-   width:960px;
-   margin:0 auto;
-   text-align:left;
-   background-color: #fff;
-   border-radius: 0 0 10px 10px;
-   padding: 20px;
-   box-shadow: 1px -2px 14px rgba(0, 0, 0, 0.4);
-}
-
-#site{
-    background-color: #fff;
-    padding: 20px 0px 0px 0px;
-}
-.centerBlock{
-	margin:0 auto;
-}
-</style>
-
-<body>
-	<div id="wrapper">
-	    <div id="logo">
-			<img width="100%" src="images/header.jpg" class="centerBlock" />
-		</div>
-		<div id="site">
-		Name: ${person.name}
-		</div>
+<#if animal??>
+	<div id="animal_table">
+		<table class="animal_table">
+			<tr>
+   				 <td>
+   				 	<h1>
+   				 		${animal.name}
+   				 	</h1>
+   				 </td> 
+			</tr>
+			<tr>
+   				 <td>
+   				 	<h2>
+   				 		Herkunftsort
+   				 	</h2>
+   				 </td> 
+			</tr>
+			<tr>
+   				 <td>
+   				 	<#if animal.birthplace??>
+						<a href="location?lid=${animal.birthplace.lid}">
+							${animal.birthplace.name}
+   				 		</a>
+   				 	</#if>
+   				 </td> 
+			</tr>
+		</table>
 	</div>
-</body>
-</html>
+<#else>
+
+</#if>
+
+<#-- END -->
+
+<#include "common/html_end.ftl">
