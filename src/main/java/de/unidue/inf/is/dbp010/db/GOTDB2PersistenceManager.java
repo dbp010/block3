@@ -16,6 +16,7 @@ import de.unidue.inf.is.dbp010.db.entity.Episode;
 import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.db.entity.Location;
 import de.unidue.inf.is.dbp010.db.entity.Person;
+import de.unidue.inf.is.dbp010.db.entity.Playlist;
 import de.unidue.inf.is.dbp010.db.entity.Rating;
 import de.unidue.inf.is.dbp010.db.entity.Season;
 import de.unidue.inf.is.dbp010.db.entity.User;
@@ -61,7 +62,8 @@ public class GOTDB2PersistenceManager {
 	private static final String LOAD_SEASONS_QUERY		=	"SELECT * FROM season s "
 														+	"ORDER BY s.sid DESC ";
 	
-	private static final String LOAD_PLAYLISTS_QUERY	=	"SELECT * FROM playlist p "
+	private static final String LOAD_PLAYLISTS_FOR_USER_QUERY
+														=	"SELECT * FROM playlist p WHERE p.usid = ?"
 														+	"ORDER BY p.plid DESC ";
 
 	private static final String LOAD_ANIMALS_BY_OWNER_QUERY	
@@ -126,6 +128,9 @@ public class GOTDB2PersistenceManager {
 														= 	" SELECT * FROM rat_for_sea rs "
 														+ 	" RIGHT JOIN rating r ON rs.rid = r.rid WHERE rs.sid = ? ";
 	
+	private static final String LOAD_EPISDOES_FOR_PLAYLIST_QUERY 
+														= 	" SELECT * FROM playlist_contains_episode pce "
+														+ 	" RIGHT JOIN episodes e ON pce.eid = e.eid WHERE pce.plid = ? ";
 	public static enum Entity {
 		Figure, Person, Animal, Castle, Episode, House, Location, Rating, Season, User, Playlist, Relationship, Member, Belonging
 	}
@@ -183,9 +188,6 @@ public class GOTDB2PersistenceManager {
 			break;
 		case Season:
 			query = LOAD_SEASONS_QUERY;
-			break;
-		case Playlist:
-			query = LOAD_PLAYLISTS_QUERY;
 			break;
 		default:
 			throw new PersistenceManagerException("Load entities not defined for entity type: " + type);
@@ -324,11 +326,37 @@ public class GOTDB2PersistenceManager {
 				return createMember(resultSet);
 			case Belonging:
 				return createBelonging(resultSet);
+			case Playlist:
+				return createPlaylist(resultSet);
 			default:
 				throw new PersistenceManagerException("Unknown entity type: " + type);
 		}
 	}
 
+	private Playlist createPlaylist(ResultSet resultSet) throws PersistenceManagerException {
+		Playlist	playlist	=	new Playlist();
+		
+		try {
+			
+			long	plid			= 	resultSet.getLong(		"PLID");
+			long	usid			= 	resultSet.getLong(		"USID");
+			
+			String 	name			=	resultSet.getString(	"NAME");
+					;
+			User		user		=	(User)	loadEntity(usid,	Entity.User);
+			
+			playlist.setPlid(plid);
+			playlist.setName(name);
+			playlist.setUser(user);
+			
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException("Create playlist object from result set failed", e);
+		}
+		
+		return playlist;
+	}
+	
 	private Belonging createBelonging(ResultSet resultSet) throws PersistenceManagerException {
 		Belonging	belonging	=	new Belonging();
 		
@@ -711,5 +739,15 @@ public class GOTDB2PersistenceManager {
 	public List<Object> loadRatingsForSeason(long sid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_SEASON_QUERY, sid);
 		return loadEntities(resultSet, Entity.Rating);
+	}
+
+	public List<Object> loadEpisodesForPlaylist(long plid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_EPISDOES_FOR_PLAYLIST_QUERY, plid);
+		return loadEntities(resultSet, Entity.Episode);
+	}
+
+	public List<Object> loadPlaylistsForUser(long usid) throws PersistenceManagerException {
+		ResultSet resultSet = executeLoadQuery(LOAD_PLAYLISTS_FOR_USER_QUERY, usid);
+		return loadEntities(resultSet, Entity.Playlist);
 	}
 }

@@ -157,6 +157,16 @@
 		<servlet-name>login_servlet</servlet-name>
 		<url-pattern>/login</url-pattern>
 	</servlet-mapping>
+	 
+	<servlet>
+		<servlet-name>playlist_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.PlaylistServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>playlist_servlet</servlet-name>
+		<url-pattern>/playlist</url-pattern>
+	</servlet-mapping>
 	
 	<!-- Prevent the visiting of MVC Views from outside the servlet container. 
 		RequestDispatcher.forward/include should and will still work. Removing this 
