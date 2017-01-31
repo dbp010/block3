@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
+import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public class FiguresServlet extends AGoTServlet {
 
@@ -21,7 +22,23 @@ public class FiguresServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		
-		List<Object>	figures		=	loadEntities(Entity.Figure, pm);
+		List<Object>	figures		=	null;
+		
+		String search = req.getParameter("sq");
+		
+		if(search == null || (search = search.trim()).isEmpty()){
+			figures = loadEntities(Entity.Figure, pm);
+		}
+		else{
+			
+			try {
+				figures = pm.searchFiguresBySearchTerm(search);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Search figures by name: " + search + " failed", e);
+			}
+			
+			req.setAttribute("sq", search);
+		}
 		
 		req.setAttribute("figures", figures);
 		

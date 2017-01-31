@@ -1,27 +1,19 @@
 package de.unidue.inf.is.dbp010.db.util;
 
+import de.unidue.inf.is.dbp010.db.entity.Character;
+
 public class Figure {
 
-	private long cid;
-	
-	private String name;
+	private Character character;
 	
 	private String type;
 
-	public long getCid() {
-		return cid;
+	public Character getCharacter() {
+		return character;
 	}
 
-	public void setCid(long cid) {
-		this.cid = cid;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public void setCharacter(Character character) {
+		this.character = character;
 	}
 
 	public String getType() {
@@ -36,8 +28,7 @@ public class Figure {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + (int) (cid ^ (cid >>> 32));
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((character == null) ? 0 : character.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -51,12 +42,10 @@ public class Figure {
 		if (getClass() != obj.getClass())
 			return false;
 		Figure other = (Figure) obj;
-		if (cid != other.cid)
-			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (character == null) {
+			if (other.character != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!character.equals(other.character))
 			return false;
 		if (type == null) {
 			if (other.type != null)
@@ -68,7 +57,7 @@ public class Figure {
 
 	@Override
 	public String toString() {
-		return "Figure [cid=" + cid + ", name=" + name + ", type=" + type + "]";
+		return "Figure [character=" + character + ", type=" + type + "]";
 	}
 	
 }

@@ -12,6 +12,7 @@ import java.util.List;
 
 import de.unidue.inf.is.dbp010.db.entity.Animal;
 import de.unidue.inf.is.dbp010.db.entity.Castle;
+import de.unidue.inf.is.dbp010.db.entity.Character;
 import de.unidue.inf.is.dbp010.db.entity.Episode;
 import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.db.entity.Location;
@@ -31,13 +32,18 @@ public class GOTDB2PersistenceManager {
 
 	private static final String DATABASE_NAME = "mygot";
 	
+	
+	// TODO: The whole figures feature should be improved more to
+	// be dynamic (optimal: no adaption of queries if new characters will be defined)
 	private static final String FIGURE_TABLE_QUERY
-														= 	" SELECT cid, name, type FROM ( "
-														+		"(SELECT p.pid AS cid, c.name, 'person' as type "
-														+			"FROM person AS p, characters AS c WHERE c.cid = p.pid)"
-														+	"UNION "
-														+		"(SELECT a.aid AS cid, c.name, 'animal' AS type "
-														+			"FROM animal AS a, characters AS c WHERE c.cid = a.aid)) ";
+														=	" SELECT * FROM characters c "
+														+	" LEFT JOIN "
+														+	" (SELECT p.*, 'true' AS person FROM person p) "
+														+	" AS p ON c.cid = p.pid "
+														+	" LEFT JOIN "
+														+	"(SELECT a.*, 'true' AS animal FROM animal a) "
+														+	" AS a ON c.cid = a.aid "
+														;
 	
 	private static final String LOAD_FIGURE_QUERY		=	FIGURE_TABLE_QUERY
 														+ 	" WHERE cid = ? ";
@@ -54,13 +60,13 @@ public class GOTDB2PersistenceManager {
 	private static final String LOAD_PLAYLIST_QUERY 	= 	"SELECT * FROM playlist p WHERE p.plid = ? ";
 	
 	private static final String LOAD_FIGURES_QUERY		=	FIGURE_TABLE_QUERY
-														+ 	" ORDER BY cid ASC ";
+														+ 	" ORDER BY cid DESC ";
 	
 	private static final String LOAD_HOUSES_QUERY		=	"SELECT * FROM houses h "
 														+	"ORDER BY h.hid DESC ";
 	
 	private static final String LOAD_SEASONS_QUERY		=	"SELECT * FROM season s "
-														+	"ORDER BY s.sid DESC ";
+														+	"ORDER BY s.number ASC ";
 	
 	private static final String LOAD_PLAYLISTS_FOR_USER_QUERY
 														=	"SELECT * FROM playlist p WHERE p.usid = ?"
@@ -107,7 +113,7 @@ public class GOTDB2PersistenceManager {
 														+	" ON f.cid = c.cid WHERE c.eid = ? ";
 	
 	private static final String LOAD_LOCATIONS_BY_EID_QUERY
-														=	"SELECT * FROM location l LEFT JOIN loc_for_epi lo ON l.lid = lo.lid AND lo.eid = ?";
+														=	"SELECT * FROM loc_for_epi lfe RIGHT JOIN location l ON l.lid = lfe.lid WHERE lfe.eid = ?";
 	
 	private static final String LOAD_EPISODES_BY_SID_QUERY
 														=	"SELECT * FROM episodes e WHERE e.sid = ? ";
@@ -131,6 +137,24 @@ public class GOTDB2PersistenceManager {
 	private static final String LOAD_EPISDOES_FOR_PLAYLIST_QUERY 
 														= 	" SELECT * FROM playlist_contains_episode pce "
 														+ 	" RIGHT JOIN episodes e ON pce.eid = e.eid WHERE pce.plid = ? ";
+	
+	private static final String SEARCH_FIGURES_BY_SEARCH_TERM_QUERY
+														=	FIGURE_TABLE_QUERY
+														+	" LEFT JOIN member_of m "
+														+	" ON m.pid = c.cid "
+														+	" LEFT JOIN houses h "
+														+	" ON m.hid = h.hid "
+														+	" WHERE UPPER(c.name) LIKE ? "
+														+	" OR UPPER(p.title) LIKE ? "
+														+	" OR UPPER(h.name) LIKE ? "
+														;
+	
+	private static final String SEARCH_HOUSES_BY_NAME_QUERY
+														=	"SELECT * FROM houses WHERE UPPER(name) LIKE ? ";
+	
+	private static final String SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY
+														=	"SELECT s.* FROM episodes e RIGHT JOIN season s ON s.sid = e.sid WHERE UPPER(title) LIKE ?";
+	
 	public static enum Entity {
 		Figure, Person, Animal, Castle, Episode, House, Location, Rating, Season, User, Playlist, Relationship, Member, Belonging
 	}
@@ -290,6 +314,26 @@ public class GOTDB2PersistenceManager {
 			
 		}catch (SQLException e) {
 			throw new PersistenceManagerException ("Execute load entity statement: " + loadQuery + " with id:" + id + " failed", e);
+		}
+	}
+	
+	private ResultSet executeSearchQuery(String searchQuery, String search) 
+	throws PersistenceManagerException {
+		
+		if(search == null || (search = search.trim()).isEmpty()) 
+			return null;
+		
+		try {
+
+			PreparedStatement loadStatement = connection.prepareStatement(searchQuery);
+			loadStatement.setString(1, "%".concat(search.toUpperCase().concat("%")));
+			
+			ResultSet resultSet = loadStatement.executeQuery();
+			
+			return (resultSet == null || !resultSet.next()) ? null : resultSet;	
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException ("Execute search entities statement: " + searchQuery + " with :" + search + " failed", e);
 		}
 	}
 	
@@ -530,11 +574,28 @@ public class GOTDB2PersistenceManager {
 
 		try {
 			long	cid 	= 	resultSet.getLong(		"CID");
-			String	name	=	resultSet.getString(	"NAME");
-			String	type	=	resultSet.getString(	"TYPE");
+			String	person	=	resultSet.getString(	"PERSON");
+			String	animal	=	resultSet.getString(	"ANIMAL");
 			
-			figure.setCid(cid);
-			figure.setName(name);
+			String	type	=	Boolean.valueOf(person) ? "person" 
+							:	Boolean.valueOf(animal) ? "animal"
+							:	null;
+			
+			if(type == null)
+				throw new PersistenceManagerException("Failed to resolve figure type, person: " + person + ", animal: " + animal);
+			
+			Character	character 	= 	null;
+			
+			if(type.equals("person")){
+				
+				character			=	(Person) loadEntity(cid, Entity.Person);
+			}
+			else if(type.equals("animal")){
+				
+				character			=	(Animal) loadEntity(cid, Entity.Animal);
+			}
+			
+			figure.setCharacter(character);
 			figure.setType(type);
 			
 		}catch (SQLException e) {
@@ -749,5 +810,42 @@ public class GOTDB2PersistenceManager {
 	public List<Object> loadPlaylistsForUser(long usid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_PLAYLISTS_FOR_USER_QUERY, usid);
 		return loadEntities(resultSet, Entity.Playlist);
+	}
+	
+	public List<Object> searchFiguresBySearchTerm(String searchTerm) throws PersistenceManagerException {
+		
+		if(searchTerm == null || (searchTerm = searchTerm.trim()).isEmpty()) 
+			return Collections.emptyList();
+		
+		try {
+			
+			PreparedStatement loadStatement = connection.prepareStatement(SEARCH_FIGURES_BY_SEARCH_TERM_QUERY);
+			
+			String paramValue = "%".concat(searchTerm.toUpperCase().concat("%"));
+			
+			loadStatement.setString(1, paramValue );
+			loadStatement.setString(2, paramValue );
+			loadStatement.setString(3, paramValue );
+			
+			ResultSet resultSet = loadStatement.executeQuery();
+			
+			if(resultSet == null || !resultSet.next())
+				return Collections.emptyList();
+			
+			return loadEntities(resultSet, Entity.Figure);
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException ("Execute search figures by search term " + SEARCH_FIGURES_BY_SEARCH_TERM_QUERY + " with search term: " + searchTerm + " failed", e);
+		}
+	}
+	
+	public List<Object> searchHousesByName(String name) throws PersistenceManagerException {
+		ResultSet resultSet = executeSearchQuery(SEARCH_HOUSES_BY_NAME_QUERY, name);
+		return loadEntities(resultSet, Entity.House);
+	}
+	
+	public List<Object> searchSeasonsByEpisodeTitle(String episodeTitle) throws PersistenceManagerException {
+		ResultSet resultSet = executeSearchQuery(SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY, episodeTitle);
+		return loadEntities(resultSet, Entity.Season);
 	}
 }

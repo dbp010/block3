@@ -27,14 +27,16 @@
 			
 			<select		name	=	"selected_rating">
     			<#if user_rating??>
-    				<option value="${user_rating.rating}">${user_rating.rating}</option>
+    				<option		value		=	"${user_rating.rating}"	>${user_rating.rating}</option>
+					<option 	disabled	=	"true"					>---</option>    			
     			</#if>
     			
-    			<option value="5">5</option>
-    			<option value="4">4</option>
-    			<option value="3">3</option>
-    			<option value="2">2</option>
-    			<option value="1">1</option>
+    			<option		value	=	"5"	>5</option>
+    			<option 	value	=	"4"	>4</option>
+    			<option 	value	=	"3"	>3</option>
+    			<option 	value	=	"2"	>2</option>
+    			<option 	value	=	"1"	>1</option>
+    			<option 	value	=	"1"	>0</option>
     			
   			</select>
 			
@@ -45,7 +47,7 @@
 				<#if user_rating??>
 					value	=	"Ändern"
 				<#else>
-					value	=	"Speichern"
+					value	=	"Bewerten"
 				</#if>
 			/>
 			
@@ -57,16 +59,24 @@
 			Alle Bewertungen
 		</h3>
 		
+		<div	id	=	"avg_rating">
+			Bewertung im Durchschnitt: ${avg_rating}
+		</div>
+		
 		<#list ratings as rating>
+			
 			<div	id	=	"rating_user">
 				Benutzer: ${rating.user.name}
 			</div>
+			
 			<div	id	=	"user_rating">
 				Bewertung: ${rating.rating}
 			</div>
+			
 			<div	id	=	"user_rating_text">
 				${rating.text}
 			</div>
+			
 		</#list>
 	</div>
 	

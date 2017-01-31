@@ -67,6 +67,7 @@
        				 	<a href="house?hid=${member.house.hid}">
        				 		${member.house.name}
        				 	</a>
+       				 	 
        				 	<a href="episode?eid=${member.episode_from.eid}">
        				 		Episode ${member.episode_from.number}
        				 	</a>

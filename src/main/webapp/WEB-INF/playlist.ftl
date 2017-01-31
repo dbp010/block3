@@ -24,6 +24,10 @@
 		
 	</table>
 	
+	<div	id	=	"episodes_count">
+		Anzahl: ${episodes?size}
+	</div>
+	
 </div>
 <#else>
 

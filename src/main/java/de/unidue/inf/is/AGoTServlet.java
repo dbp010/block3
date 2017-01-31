@@ -173,24 +173,33 @@ public abstract class AGoTServlet extends HttpServlet {
 			default:
 		}
 		
-		User	user	=	getUser(req, resp);
+		float	avgRating	=	0;
 		
-		if(ratings != null && user != null) {
+		if(ratings != null && !ratings.isEmpty()){
+			
+			User	user		=	getUser(req, resp);
+			int		count		=	ratings.size();
+			
 			for(Iterator<Object> i = ratings.iterator(); i.hasNext(); ){
 				
-				Rating rating = (Rating)i.next();
+				Rating rating 	= 	(Rating)i.next();
+				
+				avgRating 		+= 	rating.getRating();	
 				
 				if(rating.getUser().getUsid() == user.getUsid()){
 					userRating = rating;
 					i.remove();
-					break;
 				}
 				
 			}
+			
+			avgRating			/=	count;
 		}
+		
 		
 		req.setAttribute("user_rating", userRating);
 		req.setAttribute("ratings",		ratings);
+		req.setAttribute("avg_rating", 	avgRating);
 	}
 	
 	protected abstract void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)

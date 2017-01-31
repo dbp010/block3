@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
+import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public class SeasonsServlet extends AGoTServlet {
 
@@ -21,7 +22,23 @@ public class SeasonsServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		
-		List<Object>	seasons		=	loadEntities(Entity.Season, pm);
+		List<Object>	seasons		=	null;
+		
+		String search = req.getParameter("sq");
+		
+		if(search == null || (search = search.trim()).isEmpty()){
+			seasons = loadEntities(Entity.Season, pm);
+		}
+		else {
+			
+			try {
+				seasons = pm.searchSeasonsByEpisodeTitle(search);
+			} catch (PersistenceManagerException e) {
+				throw new IOException("Search seasons by episode title: " + search + " failed", e);
+			}
+			
+			req.setAttribute("sq", search);
+		}
 		
 		req.setAttribute("seasons", seasons);
 		
