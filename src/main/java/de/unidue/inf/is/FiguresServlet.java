@@ -27,7 +27,7 @@ public class FiguresServlet extends AGoTServlet {
 		String search = req.getParameter("sq");
 		
 		if(search == null || (search = search.trim()).isEmpty()){
-			figures = loadEntities(Entity.Figure, pm);
+			figures = loadEntities(Entity.figure, pm);
 		}
 		else{
 			

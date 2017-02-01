@@ -25,7 +25,7 @@ public abstract class AGoTServlet extends HttpServlet {
 	protected static final String	USER_ATTRIBUTE_NAME					=	"user";
 	
 	protected enum RatingType {
-		Character, Episode, House, Season
+		character, episode, house, season
 	}
 	
 	private final String templateName;
@@ -51,14 +51,23 @@ public abstract class AGoTServlet extends HttpServlet {
 			return;
 		}
 		
+		appendAttributes(req, resp);
+
+		dispatch(req, resp);
+	}
+	
+	protected void appendAttributes(HttpServletRequest req, HttpServletResponse resp)
+	throws ServletException, IOException {
+		
 		GOTDB2PersistenceManager pm = connect();
 		
 		appendAttributes(pm, req, resp);
 		
 		disconnect(pm);
-		
+	}
+
+	protected void dispatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		req.getRequestDispatcher(templateName).forward(req, resp);
-		
 	}
 
 	@Override
@@ -142,28 +151,28 @@ public abstract class AGoTServlet extends HttpServlet {
 		List<Object>	ratings		=	null;
 		
 		switch(type){
-			case Character:
+			case character:
 			try {
 				ratings		=	pm.loadRatingsForCharacter(id);
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for character: " + id + " failed", e);
 			}
 				break;
-			case Episode:
+			case episode:
 			try {
 				ratings		=	pm.loadRatingsForEpisode(id);
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for episode: " + id + " failed", e);
 			}
 				break;
-			case House:
+			case house:
 			try {
 				ratings		=	pm.loadRatingsForHouse(id);
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for house: " + id + " failed", e);
 			}
 				break;
-			case Season:
+			case season:
 			try {
 				ratings		=	pm.loadRatingsForSeason(id);
 			} catch (PersistenceManagerException e) {
@@ -200,6 +209,8 @@ public abstract class AGoTServlet extends HttpServlet {
 		req.setAttribute("user_rating", userRating);
 		req.setAttribute("ratings",		ratings);
 		req.setAttribute("avg_rating", 	avgRating);
+		req.setAttribute("rating_type", type);
+		
 	}
 	
 	protected abstract void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)

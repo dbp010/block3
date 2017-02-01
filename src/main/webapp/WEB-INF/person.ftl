@@ -114,7 +114,6 @@
 		</table>
 	</div>
 	
-	<#assign rating_type = "character">
 	<#include "common/ratings.ftl">
 	
 <#else>

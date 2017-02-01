@@ -22,7 +22,7 @@ public class PersonServlet extends AGoTServlet {
 	@Override
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		
-		Person 			person			= (Person) loadEntity(req, "cid", Entity.Person, pm);
+		Person 			person			= (Person) loadEntity(req, "cid", Entity.person, pm);
 
 		List<Object> 	relationships 	= null;
 		List<Object> 	animals 		= null;
@@ -48,7 +48,7 @@ public class PersonServlet extends AGoTServlet {
 				throw new IOException("Load members by person: " + person.getCid() + " failed", e);
 			}
 			
-			addRatingAttributes(RatingType.Character, person.getCid(), pm, req, resp);
+			addRatingAttributes(RatingType.character, person.getCid(), pm, req, resp);
 		}
 		
 		req.setAttribute("person", 			person);

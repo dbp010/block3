@@ -30,6 +30,9 @@
 			</tr>
 		</table>
 	</div>
+	
+	<#include "common/ratings.ftl">
+	
 <#else>
 
 </#if>

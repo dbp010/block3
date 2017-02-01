@@ -159,6 +159,26 @@
 	</servlet-mapping>
 	 
 	<servlet>
+		<servlet-name>logout_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.LogoutServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>logout_servlet</servlet-name>
+		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>register_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.RegisterServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>register_servlet</servlet-name>
+		<url-pattern>/register</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
 		<servlet-name>playlist_servlet</servlet-name>
 		<servlet-class>de.unidue.inf.is.PlaylistServlet</servlet-class>
 	</servlet>
@@ -166,6 +186,16 @@
 	<servlet-mapping>
 		<servlet-name>playlist_servlet</servlet-name>
 		<url-pattern>/playlist</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>save_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.SaveServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>save_servlet</servlet-name>
+		<url-pattern>/save</url-pattern>
 	</servlet-mapping>
 	
 	<!-- Prevent the visiting of MVC Views from outside the servlet container. 

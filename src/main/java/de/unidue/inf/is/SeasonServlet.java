@@ -23,7 +23,7 @@ public class SeasonServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp) 
 	throws IOException {
 		
-		Season	season 	= 	(Season)	loadEntity(req, "sid", Entity.Season, pm);
+		Season	season 	= 	(Season)	loadEntity(req, "sid", Entity.season, pm);
 		
 		List<Object>	episodes	=	null;
 		
@@ -35,7 +35,7 @@ public class SeasonServlet extends AGoTServlet {
 				throw new IOException("Load episodes by sid: " + season.getSid() + " failed", e);
 			}
 			
-			addRatingAttributes(RatingType.Season, season.getSid(), pm, req, resp);
+			addRatingAttributes(RatingType.season, season.getSid(), pm, req, resp);
 		}
 		
 		req.setAttribute("season", 		season);

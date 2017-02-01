@@ -45,6 +45,9 @@
 		
 	</table>
 	
+	<#assign	entity_type	=	'playlist'>
+	<#include "common/create_entity_form.ftl">
+	
 </div>
 
 <#-- END -->

@@ -29,8 +29,18 @@
 	</div>
 	
 </div>
-<#else>
+<#elseif create??>
+	<div	id	=	"create_playlist">
+		
+		<h1>
+			Neue Playlist
+		</h1>
 
+		<#assign	entity_type		=	'playlist' >
+  		<#include "common/create_entity_form.ftl">
+  		
+	</div>
+	
 </#if>
 
 <#-- END -->

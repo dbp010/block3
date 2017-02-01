@@ -27,7 +27,7 @@ public class HousesServlet extends AGoTServlet {
 		String search = req.getParameter("sq");
 		
 		if(search == null || (search = search.trim()).isEmpty()){
-			houses = loadEntities(Entity.House, pm);
+			houses = loadEntities(Entity.house, pm);
 		}
 		else{
 			

@@ -23,7 +23,7 @@ public class EpisodeServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		
-		Episode		episode		=	(Episode)	loadEntity(req, "eid", Entity.Episode, pm);
+		Episode		episode		=	(Episode)	loadEntity(req, "eid", Entity.episode, pm);
 		
 		List<Object>	figures		=	null;
 		List<Object>	locations	=	null;
@@ -42,7 +42,7 @@ public class EpisodeServlet extends AGoTServlet {
 				throw new IOException("Load locations by eid: " + episode.getEid() + " failed", e);
 			}
 			
-			addRatingAttributes(RatingType.Episode, episode.getEid(), pm, req, resp);
+			addRatingAttributes(RatingType.episode, episode.getEid(), pm, req, resp);
 		}
 		
 		req.setAttribute("episode", 	episode);

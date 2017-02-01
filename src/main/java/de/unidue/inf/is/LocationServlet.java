@@ -25,7 +25,7 @@ public class LocationServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp) 
 	throws IOException {
 		
-		Location 	location 	= 	(Location)	loadEntity(req, "lid", Entity.Location, pm);
+		Location 	location 	= 	(Location)	loadEntity(req, "lid", Entity.location, pm);
 		
 		Belonging		belonging	=	null;
 		Castle			castle		=	null;
@@ -42,7 +42,7 @@ public class LocationServlet extends AGoTServlet {
 			}
 			
 			try {
-				castle	=	pm.loadCastleByLid(location.getLid());
+				castle	=	pm.loadCastleByLocation(location.getLid());
 			} catch(PersistenceManagerException e){
 				throw new IOException("Load castle by lid: " + location.getLid() + " failed", e);
 			}

@@ -27,7 +27,7 @@ public class PlaylistServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp) 
 	throws IOException {
 		
-		Playlist	playlist	= 	(Playlist)	loadEntity(req, "plid", Entity.Playlist, pm);
+		Playlist	playlist	= 	(Playlist)	loadEntity(req, "plid", Entity.playlist, pm);
 		
 		List<Object>	episodes	=	null;
 		

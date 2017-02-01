@@ -31,9 +31,9 @@ public class GoTServlet extends AGoTServlet {
 		List<Object> playlists	= null;
 		
 		try {
-			figures		=	pm.loadEntities(Entity.Figure, 5);
-			houses 		=	pm.loadEntities(Entity.House, 5);
-			seasons		=	pm.loadEntities(Entity.Season, 5);
+			figures		=	pm.loadEntities(Entity.figure, 5);
+			houses 		=	pm.loadEntities(Entity.house, 5);
+			seasons		=	pm.loadEntities(Entity.season, 5);
 			playlists	=	pm.loadPlaylistsForUser(getUser(req, resp).getUsid());
 		} catch (PersistenceManagerException e) {
 			new PersistenceManagerException("Load summary entities failed", e).printStackTrace();

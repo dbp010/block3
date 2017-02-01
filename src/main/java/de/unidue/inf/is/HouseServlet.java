@@ -23,7 +23,7 @@ public class HouseServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 
-		House			house	=	(House) loadEntity(req, "hid", Entity.House, pm);
+		House			house	=	(House) loadEntity(req, "hid", Entity.house, pm);
 
 		List<Object>	members			= null;
 		List<Object> 	belongings 		= null;
@@ -42,7 +42,7 @@ public class HouseServlet extends AGoTServlet {
 				new PersistenceManagerException("Load belongings by house hid: " + house.getHid() + " failed", e).printStackTrace();
 			}
 			
-			addRatingAttributes(RatingType.House, house.getHid(), pm, req, resp);
+			addRatingAttributes(RatingType.house, house.getHid(), pm, req, resp);
 		}
 		
 		req.setAttribute("house", 			house);

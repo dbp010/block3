@@ -21,11 +21,11 @@ public class AnimalServlet extends AGoTServlet {
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
 	throws IOException {
 		
-		Animal 			animal 		= 	(Animal) 	loadEntity(req, "cid", Entity.Animal, pm);
+		Animal 			animal 		= 	(Animal) 	loadEntity(req, "cid", Entity.animal, pm);
 		
 		if(animal != null) {
 			
-			addRatingAttributes(RatingType.Character, animal.getCid(), pm, req, resp);
+			addRatingAttributes(RatingType.character, animal.getCid(), pm, req, resp);
 		
 		}
 		

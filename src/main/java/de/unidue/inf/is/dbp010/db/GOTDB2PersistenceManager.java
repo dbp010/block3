@@ -68,6 +68,9 @@ public class GOTDB2PersistenceManager {
 	private static final String LOAD_SEASONS_QUERY		=	"SELECT * FROM season s "
 														+	"ORDER BY s.number ASC ";
 	
+	private static final String LOAD_USER_BY_LOGIN_QUERY
+														=	"SELECT * FROM users u WHERE u.login = ?";
+	
 	private static final String LOAD_PLAYLISTS_FOR_USER_QUERY
 														=	"SELECT * FROM playlist p WHERE p.usid = ?"
 														+	"ORDER BY p.plid DESC ";
@@ -156,7 +159,7 @@ public class GOTDB2PersistenceManager {
 														=	"SELECT s.* FROM episodes e RIGHT JOIN season s ON s.sid = e.sid WHERE UPPER(title) LIKE ?";
 	
 	public static enum Entity {
-		Figure, Person, Animal, Castle, Episode, House, Location, Rating, Season, User, Playlist, Relationship, Member, Belonging
+		figure, person, animal, castle, episode, house, location, rating, season, user, playlist, relationship, member, belonging
 	}
 
 	private Connection connection;
@@ -164,6 +167,16 @@ public class GOTDB2PersistenceManager {
 	public void connect() throws PersistenceManagerException {
 		try {
 			connection = DBUtil.getExternalConnection(DATABASE_NAME);
+		} catch (SQLException e) {
+			throw new PersistenceManagerException("Establish connection to database failed", e);
+		}
+	}
+	
+	public Transaction beginTransaction() throws PersistenceManagerException {
+		try {
+			Connection connection = DBUtil.getExternalConnection(DATABASE_NAME);
+			connection.setAutoCommit(false);
+			return new Transaction(connection);
 		} catch (SQLException e) {
 			throw new PersistenceManagerException("Establish connection to database failed", e);
 		}
@@ -204,13 +217,13 @@ public class GOTDB2PersistenceManager {
 		String query;
 		
 		switch (type) {
-		case Figure:
+		case figure:
 			query = LOAD_FIGURES_QUERY;
 			break;
-		case House:
+		case house:
 			query = LOAD_HOUSES_QUERY;
 			break;
-		case Season:
+		case season:
 			query = LOAD_SEASONS_QUERY;
 			break;
 		default:
@@ -261,37 +274,37 @@ public class GOTDB2PersistenceManager {
 		String 		loadQuery;
 		
 			switch(type) {
-			case Figure:
+			case figure:
 				loadQuery = LOAD_FIGURE_QUERY;
 				break;
-			case Person:
+			case person:
 				loadQuery = LOAD_PERSON_QUERY;
 				break;
-			case Animal:
+			case animal:
 				loadQuery = LOAD_ANIMAL_QUERY;
 				break;
-			case Castle:
+			case castle:
 				loadQuery = LOAD_CASTLE_QUERY;
 				break;
-			case Episode:
+			case episode:
 				loadQuery = LOAD_EPISODE_QUERY;
 				break;
-			case House:
+			case house:
 				loadQuery = LOAD_HOUSE_QUERY;
 				break;
-			case Location:
+			case location:
 				loadQuery = LOAD_LOCATION_QUERY;
 				break;
-			case Rating:
+			case rating:
 				loadQuery = LOAD_RATING_QUERY;
 				break;
-			case Season:
+			case season:
 				loadQuery = LOAD_SEASON_QUERY;
 				break;
-			case User:
+			case user:
 				loadQuery = LOAD_USER_QUERY;
 				break;
-			case Playlist:
+			case playlist:
 				loadQuery = LOAD_PLAYLIST_QUERY;
 				break;
 			default:
@@ -344,33 +357,33 @@ public class GOTDB2PersistenceManager {
 		
 		switch(type) {
 			
-			case Figure:
+			case figure:
 				return createFigure(resultSet);
-			case Person:
+			case person:
 				return createPerson(resultSet);
-			case Animal:
+			case animal:
 				return createAnimal(resultSet);
-			case Castle:
+			case castle:
 				return createCastle(resultSet);
-			case Episode:
+			case episode:
 				return createEpisode(resultSet);
-			case House:
+			case house:
 				return createHouse(resultSet);
-			case Location:
+			case location:
 				return createLocation(resultSet);
-			case Rating:
+			case rating:
 				return createRating(resultSet);
-			case Season:
+			case season:
 				return createSeason(resultSet);
-			case User:
+			case user:
 				return createUser(resultSet);
-			case Relationship:
+			case relationship:
 				return createRelationship(resultSet);
-			case Member:
+			case member:
 				return createMember(resultSet);
-			case Belonging:
+			case belonging:
 				return createBelonging(resultSet);
-			case Playlist:
+			case playlist:
 				return createPlaylist(resultSet);
 			default:
 				throw new PersistenceManagerException("Unknown entity type: " + type);
@@ -387,7 +400,7 @@ public class GOTDB2PersistenceManager {
 			
 			String 	name			=	resultSet.getString(	"NAME");
 					;
-			User		user		=	(User)	loadEntity(usid,	Entity.User);
+			User		user		=	(User)	loadEntity(usid,	Entity.user);
 			
 			playlist.setPlid(plid);
 			playlist.setName(name);
@@ -411,10 +424,10 @@ public class GOTDB2PersistenceManager {
 			long	episode_from_id	=	resultSet.getLong(		"EPISODE_FROM");
 			long	episode_to_id	=	resultSet.getLong(		"EPISODE_TO");
 			
-			Location	location		= 	(Location)	loadEntity(lid,				Entity.Location);
-			House		house			= 	(House) 	loadEntity(hid,				Entity.House);
-			Episode		episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode);
-			Episode		episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode);
+			Location	location		= 	(Location)	loadEntity(lid,				Entity.location);
+			House		house			= 	(House) 	loadEntity(hid,				Entity.house);
+			Episode		episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.episode);
+			Episode		episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.episode);
 			
 			belonging.setLocation(location);
 			belonging.setHouse(house);
@@ -438,10 +451,10 @@ public class GOTDB2PersistenceManager {
 			long	episode_from_id	=	resultSet.getLong(		"EPISODE_FROM");
 			long	episode_to_id	=	resultSet.getLong(		"EPISODE_TO");
 			
-			Person	person			= 	(Person)	loadEntity(pid,				Entity.Person);
-			House	house			= 	(House) 	loadEntity(hid,				Entity.House);
-			Episode	episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.Episode);
-			Episode	episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.Episode);
+			Person	person			= 	(Person)	loadEntity(pid,				Entity.person);
+			House	house			= 	(House) 	loadEntity(hid,				Entity.house);
+			Episode	episode_from	=	(Episode)	loadEntity(episode_from_id,	Entity.episode);
+			Episode	episode_to		=	(Episode)	loadEntity(episode_to_id,	Entity.episode);
 			
 			member.setPerson(person);
 			member.setHouse(house);
@@ -464,8 +477,8 @@ public class GOTDB2PersistenceManager {
 			long	targetpid		= 	resultSet.getLong(		"TARGETPID");
 			String	rel_type		=	resultSet.getString(	"REL_TYPE");
 						
-			Person sourcep			= 	(Person) loadEntity(sourcepid, Entity.Person);
-			Person targetp			= 	(Person) loadEntity(targetpid, Entity.Person);
+			Person sourcep			= 	(Person) loadEntity(sourcepid, Entity.person);
+			Person targetp			= 	(Person) loadEntity(targetpid, Entity.person);
 			
 			relationship.setSourcep(sourcep);
 			relationship.setTargetp(targetp);
@@ -488,7 +501,7 @@ public class GOTDB2PersistenceManager {
 			String	coatofarmspath	=	resultSet.getString(	"COATOFARMSPATH");
 			long	seatId			=	resultSet.getLong(		"SEAT");
 			
-			Castle seat 			=	(Castle) loadEntity(seatId, Entity.Castle);
+			Castle seat 			=	(Castle) loadEntity(seatId, Entity.castle);
 			
 			house.setHid(hid);
 			house.setName(name);
@@ -555,7 +568,7 @@ public class GOTDB2PersistenceManager {
 			int		i_rating		=	resultSet.getInt(		"RATING");
 			String	text			=	resultSet.getString(	"TEXT");
 			
-			User	user	=	(User) loadEntity(usid, Entity.User);
+			User	user	=	(User) loadEntity(usid, Entity.user);
 			
 			rating.setRid(rid);
 			rating.setRating(i_rating);
@@ -588,11 +601,11 @@ public class GOTDB2PersistenceManager {
 			
 			if(type.equals("person")){
 				
-				character			=	(Person) loadEntity(cid, Entity.Person);
+				character			=	(Person) loadEntity(cid, Entity.person);
 			}
 			else if(type.equals("animal")){
 				
-				character			=	(Animal) loadEntity(cid, Entity.Animal);
+				character			=	(Animal) loadEntity(cid, Entity.animal);
 			}
 			
 			figure.setCharacter(character);
@@ -633,7 +646,7 @@ public class GOTDB2PersistenceManager {
 			String	summary 		=	resultSet.getString(	"SUMMARY");
 			Date 	releasedate		= 	resultSet.getDate(		"RELEASEDATE");
 			
-			Season 	season 			= 	(Season)	loadEntity(sid, Entity.Season);
+			Season 	season 			= 	(Season)	loadEntity(sid, Entity.season);
 
 			episode.setEid(eid);
 			episode.setTitle(title);
@@ -658,7 +671,7 @@ public class GOTDB2PersistenceManager {
 			String	name 			= resultSet.getString(	"NAME");
 			long 	locationId 		= resultSet.getLong(	"LOCATION");
 			
-			Location 	location 	= 	(Location)	loadEntity(locationId, Entity.Location);
+			Location 	location 	= 	(Location)	loadEntity(locationId, Entity.location);
 
 			castle.setCaid(caid);
 			castle.setName(name);
@@ -680,8 +693,8 @@ public class GOTDB2PersistenceManager {
 			long 	birthplaceId 	= resultSet.getLong(	"BIRTHPLACE");
 			long	ownerId			= resultSet.getLong(	"OWNER");
 			
-			Location 	birthplace 	= 	(Location)	loadEntity(birthplaceId,	Entity.Location);
-			Person		owner		=	(Person)	loadEntity(ownerId, 		Entity.Person);
+			Location 	birthplace 	= 	(Location)	loadEntity(birthplaceId,	Entity.location);
+			Person		owner		=	(Person)	loadEntity(ownerId, 		Entity.person);
 
 			animal.setCid(cid);
 			animal.setName(name);
@@ -707,7 +720,7 @@ public class GOTDB2PersistenceManager {
 			String 	biografie 		= resultSet.getString(	"BIOGRAFIE");
 			String	title			= resultSet.getString(	"TITLE");
 			
-			Location birthplace 	= (Location)	loadEntity(birthplaceId, Entity.Location);
+			Location birthplace 	= (Location)	loadEntity(birthplaceId, Entity.location);
 
 			person.setCid(cid);
 			person.setName(name);
@@ -724,92 +737,108 @@ public class GOTDB2PersistenceManager {
 
 	public List<Object> loadRelationshipsBySourcepid(long sourcepid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RELATIONSHIPS_BY_SOURCEPID_QUERY, sourcepid);
-		return loadEntities(resultSet, Entity.Relationship);
+		return loadEntities(resultSet, Entity.relationship);
 	}
 
 	public List<Object> loadAnimalsByOwner(long owner) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_ANIMALS_BY_OWNER_QUERY, owner);
-		return loadEntities(resultSet, Entity.Animal);
+		return loadEntities(resultSet, Entity.animal);
 	}
 	
 	public List<Object> loadMembersByPid(long pid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_PID_QUERY, pid);
-		return loadEntities(resultSet, Entity.Member);
+		return loadEntities(resultSet, Entity.member);
 	}
 	
 	public List<Object> loadMembersByHid(long hid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_MEMBERS_BY_HID_QUERY, hid);
-		return loadEntities(resultSet, Entity.Member);
+		return loadEntities(resultSet, Entity.member);
 	}
 
 	public List<Object> loadBelongingsByHid(long hid) throws PersistenceManagerException{
 		ResultSet resultSet = executeLoadQuery(LOAD_BELONGINGS_BY_HID_QUERY, hid);
-		return loadEntities(resultSet, Entity.Belonging);
+		return loadEntities(resultSet, Entity.belonging);
 	}
 	
 	public Belonging loadActualBelongingByLid(long lid) throws PersistenceManagerException{
 		ResultSet resultSet = executeLoadQuery(LOAD_ACTUAL_BELONGING_BY_LID_QUERY, lid);
-		return (Belonging) createObject(Entity.Belonging, resultSet);
+		return (Belonging) createObject(Entity.belonging, resultSet);
 	}
 
-	public Castle loadCastleByLid(long lid) throws PersistenceManagerException {
+	public Castle loadCastleByLocation(long lid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_CASTLE_BY_LID_QUERY, lid);
-		return (Castle) createObject(Entity.Castle, resultSet);
+		return (Castle) createObject(Entity.castle, resultSet);
 	}
 
+	public User loadUserByLogin(String login) throws PersistenceManagerException {
+		try {
+
+			PreparedStatement loadStatement = connection.prepareStatement(LOAD_USER_BY_LOGIN_QUERY);
+			loadStatement.setString(1, login);
+			
+			ResultSet resultSet = loadStatement.executeQuery();
+			return	(resultSet == null || !resultSet.next()) 
+					?	null 
+					:	(User) createObject(Entity.user, resultSet);
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException ("Execute load user by login query: " + LOAD_USER_BY_LOGIN_QUERY + " with login:" + login + " failed", e);
+		}
+	}
+	
 	public List<Object> loadPerosnsByBirthplace(long lid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_PERSONS_BY_BIRTHPLACE_QUERY, lid);
-		return loadEntities(resultSet, Entity.Person);
+		return loadEntities(resultSet, Entity.person);
 	}
 
 	public List<Object> loadEpisodesByLid(long lid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_EPISODES_BY_LID_QUERY, lid);
-		return loadEntities(resultSet, Entity.Episode);
+		return loadEntities(resultSet, Entity.episode);
 	}
 	
 	public List<Object> loadFiguresByEid(long eid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_FIGURES_BY_EID_QUERY, eid);
-		return loadEntities(resultSet, Entity.Figure);
+		return loadEntities(resultSet, Entity.figure);
 	}
 	
 	public List<Object> loadLocationsByEid(long eid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_LOCATIONS_BY_EID_QUERY, eid);
-		return loadEntities(resultSet, Entity.Location);
+		return loadEntities(resultSet, Entity.location);
 	}
 	
 	public List<Object> loadEpisodesBySid(long sid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_EPISODES_BY_SID_QUERY, sid);
-		return loadEntities(resultSet, Entity.Episode);
+		return loadEntities(resultSet, Entity.episode);
 	}
 
 	public List<Object> loadRatingsForCharacter(long cid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_CHARACTER_QUERY, cid);
-		return loadEntities(resultSet, Entity.Rating);
+		return loadEntities(resultSet, Entity.rating);
 	}
 
 	public List<Object> loadRatingsForEpisode(long eid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_EPISODE_QUERY, eid);
-		return loadEntities(resultSet, Entity.Rating);
+		return loadEntities(resultSet, Entity.rating);
 	}
 
 	public List<Object> loadRatingsForHouse(long hid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_HOUSE_QUERY, hid);
-		return loadEntities(resultSet, Entity.Rating);
+		return loadEntities(resultSet, Entity.rating);
 	}
 
 	public List<Object> loadRatingsForSeason(long sid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_RATINGS_FOR_SEASON_QUERY, sid);
-		return loadEntities(resultSet, Entity.Rating);
+		return loadEntities(resultSet, Entity.rating);
 	}
 
 	public List<Object> loadEpisodesForPlaylist(long plid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_EPISDOES_FOR_PLAYLIST_QUERY, plid);
-		return loadEntities(resultSet, Entity.Episode);
+		return loadEntities(resultSet, Entity.episode);
 	}
 
 	public List<Object> loadPlaylistsForUser(long usid) throws PersistenceManagerException {
 		ResultSet resultSet = executeLoadQuery(LOAD_PLAYLISTS_FOR_USER_QUERY, usid);
-		return loadEntities(resultSet, Entity.Playlist);
+		return loadEntities(resultSet, Entity.playlist);
 	}
 	
 	public List<Object> searchFiguresBySearchTerm(String searchTerm) throws PersistenceManagerException {
@@ -832,7 +861,7 @@ public class GOTDB2PersistenceManager {
 			if(resultSet == null || !resultSet.next())
 				return Collections.emptyList();
 			
-			return loadEntities(resultSet, Entity.Figure);
+			return loadEntities(resultSet, Entity.figure);
 			
 		}catch (SQLException e) {
 			throw new PersistenceManagerException ("Execute search figures by search term " + SEARCH_FIGURES_BY_SEARCH_TERM_QUERY + " with search term: " + searchTerm + " failed", e);
@@ -841,11 +870,11 @@ public class GOTDB2PersistenceManager {
 	
 	public List<Object> searchHousesByName(String name) throws PersistenceManagerException {
 		ResultSet resultSet = executeSearchQuery(SEARCH_HOUSES_BY_NAME_QUERY, name);
-		return loadEntities(resultSet, Entity.House);
+		return loadEntities(resultSet, Entity.house);
 	}
 	
 	public List<Object> searchSeasonsByEpisodeTitle(String episodeTitle) throws PersistenceManagerException {
 		ResultSet resultSet = executeSearchQuery(SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY, episodeTitle);
-		return loadEntities(resultSet, Entity.Season);
+		return loadEntities(resultSet, Entity.season);
 	}
 }

@@ -27,7 +27,7 @@ public class SeasonsServlet extends AGoTServlet {
 		String search = req.getParameter("sq");
 		
 		if(search == null || (search = search.trim()).isEmpty()){
-			seasons = loadEntities(Entity.Season, pm);
+			seasons = loadEntities(Entity.season, pm);
 		}
 		else {
 			

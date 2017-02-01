@@ -2,13 +2,14 @@ package de.unidue.inf.is;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
-import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.User;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
+import de.unidue.inf.is.utils.CryptUtil;
 
 public class LoginServlet extends AGoTServlet {
 
@@ -20,24 +21,64 @@ public class LoginServlet extends AGoTServlet {
 	}
 
 	@Override
-	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
-	throws IOException {
-		User	user	=	getUser(req, resp);
-
-		// START: ONLY FOR DEVELOPMENT !!! {
-		if(user == null){
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		
-			try {
-				user	=	(User)	pm.loadEntity(1, Entity.User);
-				setUser(user, req, resp);
-			} catch (PersistenceManagerException e) {
-				throw new IOException("Load user failed", e);
+		User	user	=	getUser(req, resp);
+		String	error	=	null;
+		
+		String	f		=	req.getParameter("f");
+		
+		if(f	!=	null	&&	user == null){
+			
+			String	p		=	req.getParameter("p");
+			String	l		=	req.getParameter("l");
+			
+			
+			boolean valid	=	(p 	!= 	null 
+							&&	(p 	= 	p.trim()).length() > 0
+							&&	l	!=	null
+							&&	(l	=	l.trim()).length() > 0);
+			
+			if(valid){
+				
+				try {
+					
+					GOTDB2PersistenceManager pm = connect();
+					user	=	pm.loadUserByLogin(l);
+					disconnect(pm);
+					
+				} catch (PersistenceManagerException e) {
+					throw new IOException("Load user by login: " + l + " failed", e);
+				}
+				
 			}
 			
-		}
-		// } END
+			if(user != null){
+				String sha1		=	CryptUtil.createSHA1Hash(p);
+				String check	=	sha1.substring(0, 31);
 				
-		req.setAttribute("user", user);
+				if(!user.getPassword().equals(check)){
+					user = null;
+				}
+			}
+			
+			if( user == null) {
+				error = "credentials_incorrect";
+			}
+			else
+				user.setPassword(null);
+				setUser(user, req, resp);
+			
+		}
+		
+		req.setAttribute("user", 	user);
+		req.setAttribute("error",	error);
+		
+		dispatch(req, resp);
 	}
+
+	@Override
+	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
+	throws IOException {}
 	
 }
