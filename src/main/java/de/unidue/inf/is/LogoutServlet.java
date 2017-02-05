@@ -29,8 +29,8 @@ public class LogoutServlet extends AGoTServlet {
 		
 		boolean		loggedOut	=	true;
 		
-		req.setAttribute("logged_out",	loggedOut);
-		req.setAttribute("user", 		user);
+		req.setAttribute("logged_out",				loggedOut);
+		req.setAttribute("logged_out_user", 		user);
 		
 	}
 	

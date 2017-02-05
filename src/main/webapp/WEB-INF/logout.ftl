@@ -3,8 +3,8 @@
 <#-- START: BODY CONTENT GOES HERE -->
 <div	id	=	"logged_out">
 
-	<#if user??>
-		Benutzer: ${user.name } abgemeldet.
+	<#if logged_out_user??>
+		Benutzer: ${logged_out_user.name } abgemeldet.
 	<#else>
 		Sie sind bereits abgemeldet.
 	</#if>

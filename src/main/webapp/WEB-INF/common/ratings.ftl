@@ -2,7 +2,7 @@
 	<div	id	"user_rating_form">
 		
 		<#assign	entity_type	=	'rating'>
-		<#include "common/create_entity_form.ftl">
+		<#include "create_entity_form.ftl">
 		
 	</div>
 	

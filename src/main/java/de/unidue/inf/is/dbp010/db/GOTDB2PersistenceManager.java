@@ -153,13 +153,17 @@ public class GOTDB2PersistenceManager {
 														;
 	
 	private static final String SEARCH_HOUSES_BY_NAME_QUERY
-														=	"SELECT * FROM houses WHERE UPPER(name) LIKE ? ";
+														=	" SELECT * FROM houses WHERE UPPER(name) LIKE ? ";
 	
 	private static final String SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY
-														=	"SELECT s.* FROM episodes e RIGHT JOIN season s ON s.sid = e.sid WHERE UPPER(title) LIKE ?";
+														=	" SELECT s.* FROM episodes e RIGHT JOIN season s "
+														+ 	" ON s.sid = e.sid WHERE UPPER(title) LIKE ?";
+
+	private static final String LOAD_USER_PLAYLIST_BY_NAME_QUERY 
+														=	"SELECT * FROM playlist p WHERE p.usid = ? AND p.name = ? ";
 	
 	public static enum Entity {
-		figure, person, animal, castle, episode, house, location, rating, season, user, playlist, relationship, member, belonging
+		figure, person, animal, castle, episode, house, location, rating, season, user, playlist, relationship, member, belonging, ratinglink
 	}
 
 	private Connection connection;
@@ -376,7 +380,7 @@ public class GOTDB2PersistenceManager {
 			case season:
 				return createSeason(resultSet);
 			case user:
-				return createUser(resultSet);
+				return createUser(resultSet, false);
 			case relationship:
 				return createRelationship(resultSet);
 			case member:
@@ -516,14 +520,14 @@ public class GOTDB2PersistenceManager {
 		return house;
 	}
 
-	private Object createUser(ResultSet resultSet) throws PersistenceManagerException {
+	private Object createUser(ResultSet resultSet, boolean withPassword) throws PersistenceManagerException {
 		User	user 	= 	new User();
 
 		try {
 			long	usid 			= 	resultSet.getLong(		"USID");
 			String	login			=	resultSet.getString(	"LOGIN");
 			String	name			=	resultSet.getString(	"NAME");
-			String	password		=	resultSet.getString(	"PASSWORT");
+			String	password		=	withPassword ? resultSet.getString(	"PASSWORT") : null;
 			
 			user.setUsid(usid);
 			user.setLogin(login);
@@ -779,7 +783,7 @@ public class GOTDB2PersistenceManager {
 			ResultSet resultSet = loadStatement.executeQuery();
 			return	(resultSet == null || !resultSet.next()) 
 					?	null 
-					:	(User) createObject(Entity.user, resultSet);
+					:	(User) createUser(resultSet, true);
 			
 		}catch (SQLException e) {
 			throw new PersistenceManagerException ("Execute load user by login query: " + LOAD_USER_BY_LOGIN_QUERY + " with login:" + login + " failed", e);
@@ -841,6 +845,41 @@ public class GOTDB2PersistenceManager {
 		return loadEntities(resultSet, Entity.playlist);
 	}
 	
+	public Playlist loadUserPlaylistByName(User user, String name) throws PersistenceManagerException {
+		try {
+			
+			PreparedStatement loadStatement = connection.prepareStatement(LOAD_USER_PLAYLIST_BY_NAME_QUERY);
+			loadStatement.setLong(		1, 	user.getUsid());
+			loadStatement.setString(	2,	name);
+			
+			ResultSet resultSet = loadStatement.executeQuery();
+			
+			return 		(resultSet == null || !resultSet.next()) 
+					?	null 
+					: 	(Playlist) createObject(Entity.playlist, resultSet);	
+			
+		}catch (SQLException e) {
+			throw new PersistenceManagerException (		"Load user playlist by name: " 
+													+ 	LOAD_USER_PLAYLIST_BY_NAME_QUERY 
+													+ 	" with user:" 
+													+ 	user 
+													+ 	" and name:" 
+													+ 	name
+													+ 	" failed", e);
+		}
+		
+	}
+	
+	public List<Object> searchHousesByName(String name) throws PersistenceManagerException {
+		ResultSet resultSet = executeSearchQuery(SEARCH_HOUSES_BY_NAME_QUERY, name);
+		return loadEntities(resultSet, Entity.house);
+	}
+	
+	public List<Object> searchSeasonsByEpisodeTitle(String episodeTitle) throws PersistenceManagerException {
+		ResultSet resultSet = executeSearchQuery(SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY, episodeTitle);
+		return loadEntities(resultSet, Entity.season);
+	}
+	
 	public List<Object> searchFiguresBySearchTerm(String searchTerm) throws PersistenceManagerException {
 		
 		if(searchTerm == null || (searchTerm = searchTerm.trim()).isEmpty()) 
@@ -866,15 +905,5 @@ public class GOTDB2PersistenceManager {
 		}catch (SQLException e) {
 			throw new PersistenceManagerException ("Execute search figures by search term " + SEARCH_FIGURES_BY_SEARCH_TERM_QUERY + " with search term: " + searchTerm + " failed", e);
 		}
-	}
-	
-	public List<Object> searchHousesByName(String name) throws PersistenceManagerException {
-		ResultSet resultSet = executeSearchQuery(SEARCH_HOUSES_BY_NAME_QUERY, name);
-		return loadEntities(resultSet, Entity.house);
-	}
-	
-	public List<Object> searchSeasonsByEpisodeTitle(String episodeTitle) throws PersistenceManagerException {
-		ResultSet resultSet = executeSearchQuery(SEARCH_SEASONS_BY_EPISODE_TITLE_QUERY, episodeTitle);
-		return loadEntities(resultSet, Entity.season);
 	}
 }

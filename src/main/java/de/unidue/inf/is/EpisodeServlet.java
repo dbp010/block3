@@ -3,12 +3,14 @@ package de.unidue.inf.is;
 import java.io.IOException;
 import java.util.List;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
 import de.unidue.inf.is.dbp010.db.entity.Episode;
+import de.unidue.inf.is.dbp010.db.util.RatingLink.RatingType;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public class EpisodeServlet extends AGoTServlet {
@@ -21,7 +23,7 @@ public class EpisodeServlet extends AGoTServlet {
 
 	@Override
 	protected void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
-	throws IOException {
+	throws IOException, ServletException {
 		
 		Episode		episode		=	(Episode)	loadEntity(req, "eid", Entity.episode, pm);
 		

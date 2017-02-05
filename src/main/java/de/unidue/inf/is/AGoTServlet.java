@@ -12,8 +12,13 @@ import javax.servlet.http.HttpSession;
 
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager;
 import de.unidue.inf.is.dbp010.db.GOTDB2PersistenceManager.Entity;
+import de.unidue.inf.is.dbp010.db.entity.Episode;
+import de.unidue.inf.is.dbp010.db.entity.House;
 import de.unidue.inf.is.dbp010.db.entity.Rating;
+import de.unidue.inf.is.dbp010.db.entity.Season;
 import de.unidue.inf.is.dbp010.db.entity.User;
+import de.unidue.inf.is.dbp010.db.util.Figure;
+import de.unidue.inf.is.dbp010.db.util.RatingLink.RatingType;
 import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public abstract class AGoTServlet extends HttpServlet {
@@ -23,10 +28,6 @@ public abstract class AGoTServlet extends HttpServlet {
 	protected static final String	DEFAULT_LOGIN_DISPATCH_LOCATION 	= 	"login";
 	
 	protected static final String	USER_ATTRIBUTE_NAME					=	"user";
-	
-	protected enum RatingType {
-		character, episode, house, season
-	}
 	
 	private final String templateName;
 	
@@ -61,9 +62,14 @@ public abstract class AGoTServlet extends HttpServlet {
 		
 		GOTDB2PersistenceManager pm = connect();
 		
-		appendAttributes(pm, req, resp);
+		try {
 		
-		disconnect(pm);
+			appendAttributes(pm, req, resp);
+
+		} finally {
+			disconnect(pm);
+		}
+		
 	}
 
 	protected void dispatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -145,41 +151,60 @@ public abstract class AGoTServlet extends HttpServlet {
 	}
 	
 	protected void addRatingAttributes(RatingType type, long id, GOTDB2PersistenceManager pm,
-	HttpServletRequest req, 	HttpServletResponse resp) throws IOException {
+	HttpServletRequest req, 	HttpServletResponse resp) throws IOException, ServletException {
 		
-		Rating			userRating	=	null;
-		List<Object>	ratings		=	null;
+		Rating			userRating		=	null;
+		List<Object>	ratings			=	null;
+		Object			ratingEntity	=	null;
+		long			ratingEntityId	=	-1;
 		
 		switch(type){
 			case character:
 			try {
-				ratings		=	pm.loadRatingsForCharacter(id);
+				
+				ratings			=	pm.loadRatingsForCharacter(id);
+				ratingEntity	=	pm.loadEntity(id, Entity.figure);
+				ratingEntityId	=	((Figure)ratingEntity).getCharacter().getCid();
+				
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for character: " + id + " failed", e);
 			}
 				break;
 			case episode:
 			try {
-				ratings		=	pm.loadRatingsForEpisode(id);
+				
+				ratings			=	pm.loadRatingsForEpisode(id);
+				ratingEntity	=	pm.loadEntity(id, Entity.episode);
+				ratingEntityId	=	((Episode)ratingEntity).getEid();
+				
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for episode: " + id + " failed", e);
 			}
 				break;
 			case house:
 			try {
-				ratings		=	pm.loadRatingsForHouse(id);
+				
+				ratings			=	pm.loadRatingsForHouse(id);
+				ratingEntity	=	pm.loadEntity(id, Entity.house);
+				ratingEntityId	=	((House)ratingEntity).getHid();
+				
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for house: " + id + " failed", e);
 			}
 				break;
 			case season:
 			try {
-				ratings		=	pm.loadRatingsForSeason(id);
+				
+				ratings			=	pm.loadRatingsForSeason(id);
+				ratingEntity	=	pm.loadEntity(id, Entity.season);
+				ratingEntityId	=	((Season)ratingEntity).getSid();
+				
 			} catch (PersistenceManagerException e) {
 				throw new IOException("Load ratings for season: " + id + " failed", e);
 			}
 				break;
 			default:
+				throw new ServletException("Load ratings for rating type: " + type + " not defined");
 		}
 		
 		float	avgRating	=	0;
@@ -206,14 +231,15 @@ public abstract class AGoTServlet extends HttpServlet {
 		}
 		
 		
-		req.setAttribute("user_rating", userRating);
-		req.setAttribute("ratings",		ratings);
-		req.setAttribute("avg_rating", 	avgRating);
-		req.setAttribute("rating_type", type);
+		req.setAttribute("user_rating", 		userRating);
+		req.setAttribute("ratings",				ratings);
+		req.setAttribute("avg_rating", 			avgRating);
+		req.setAttribute("rating_type", 		type);
+		req.setAttribute("rating_entity_id", 	ratingEntityId);
 		
 	}
 	
 	protected abstract void appendAttributes(GOTDB2PersistenceManager pm, HttpServletRequest req, HttpServletResponse resp)
-	throws IOException;
+	throws IOException, ServletException;
 	
 }

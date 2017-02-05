@@ -2,10 +2,13 @@ package de.unidue.inf.is.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import com.ibm.db2.jcc.DB2Driver;
+
+import de.unidue.inf.is.dbp010.exception.PersistenceManagerException;
 
 public final class DBUtil {
 
@@ -67,4 +70,26 @@ public final class DBUtil {
 		return exists;
 	}
 
+	public static void close(ResultSet resultSet) {
+		try{
+			close(resultSet, true);
+		}catch (PersistenceManagerException e) {
+			// suppressed
+		}
+	}
+	
+	public static void close(ResultSet resultSet, boolean suppressException) throws PersistenceManagerException {
+		if(resultSet == null)
+			return;
+		
+		try {
+			resultSet.close();
+		}catch (SQLException e) {
+			if(!suppressException)
+				e.printStackTrace();
+			else
+				throw new PersistenceManagerException("Failed to close result set");
+		}
+		
+	}	
 }

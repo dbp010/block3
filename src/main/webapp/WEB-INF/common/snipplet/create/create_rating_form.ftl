@@ -6,8 +6,14 @@
 
 <input 
 	type	=	"hidden"
-	name	=	"usid"
-	value	=	"${user.usid}"
+	name	=	"rating_id"
+	value	=	"<#if	user_rating??>${user_rating.rid}<#else>-1</#if>"
+/>
+
+<input 
+	type	=	"hidden"
+	name	=	"rating_entity_id"
+	value	=	"${rating_entity_id}"
 />
 
 Deine Bewertung:
@@ -23,7 +29,7 @@ Deine Bewertung:
 	<option 	value	=	"3"	>3</option>
 	<option 	value	=	"2"	>2</option>
 	<option 	value	=	"1"	>1</option>
-	<option 	value	=	"1"	>0</option>
+	<option 	value	=	"0"	>0</option>
 	
 </select>
 

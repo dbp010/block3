@@ -1,11 +1,11 @@
 Bewertung für  
-<#if	rating_type 	== 	'character'>
-Figur
-<#elseif rating_type	==	'episode'>
-Episode
-<#elseif rating_type	==	'house'>
-Haus
-<#elseif rating_type	==	'season'>
-Staffel
+<#if	entity.type 	== 	'character'>
+Figur: ${entity.ratingEntity.character.name}
+<#elseif entity.type	==	'episode'>
+Episode: ${entity.ratingEntity.title}
+<#elseif entity.type	==	'house'>
+Haus: ${entity.ratingEntity.name}
+<#elseif entity.type	==	'season'>
+Staffel: ${entity.ratingEntity.number}
 </#if>
 erstellt.

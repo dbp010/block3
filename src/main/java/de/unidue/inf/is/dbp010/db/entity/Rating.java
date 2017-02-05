@@ -1,7 +1,7 @@
 package de.unidue.inf.is.dbp010.db.entity;
 
 public class Rating {
-
+	
 	private long rid;
 	
 	private User user;
@@ -9,7 +9,7 @@ public class Rating {
 	private int rating;
 	
 	private String text;
-
+	
 	public long getRid() {
 		return rid;
 	}
@@ -83,4 +83,5 @@ public class Rating {
 	public String toString() {
 		return "Rating [rid=" + rid + ", user=" + user + ", rating=" + rating + ", text=" + text + "]";
 	}
+
 }

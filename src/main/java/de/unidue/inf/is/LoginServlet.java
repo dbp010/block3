@@ -41,14 +41,15 @@ public class LoginServlet extends AGoTServlet {
 			
 			if(valid){
 				
+				GOTDB2PersistenceManager pm = connect();
+				
 				try {
-					
-					GOTDB2PersistenceManager pm = connect();
 					user	=	pm.loadUserByLogin(l);
-					disconnect(pm);
-					
 				} catch (PersistenceManagerException e) {
 					throw new IOException("Load user by login: " + l + " failed", e);
+				}
+				finally {
+					disconnect(pm);
 				}
 				
 			}

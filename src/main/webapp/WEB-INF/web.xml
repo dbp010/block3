@@ -198,6 +198,16 @@
 		<url-pattern>/save</url-pattern>
 	</servlet-mapping>
 	
+	<servlet>
+		<servlet-name>user_servlet</servlet-name>
+		<servlet-class>de.unidue.inf.is.UserServlet</servlet-class>
+	</servlet>
+	
+	<servlet-mapping>
+		<servlet-name>user_servlet</servlet-name>
+		<url-pattern>/user</url-pattern>
+	</servlet-mapping>
+	
 	<!-- Prevent the visiting of MVC Views from outside the servlet container. 
 		RequestDispatcher.forward/include should and will still work. Removing this 
 		may open security holes! -->
